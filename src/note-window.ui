@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <!-- interface-name note-window.ui -->
+  <requires lib="gio" version="2.0"/>
+  <requires lib="gtk" version="4.6"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <template class="NoteWindow" parent="AdwApplicationWindow">
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="AdwTabView" id="page"/>
+        </property>
+        <child type="top">
+          <object class="AdwHeaderBar" id="header_bar">
+            <child type="start">
+              <object class="GtkButton" id="add_page">
+                <property name="action-name">app.add</property>
+                <property name="icon-name">list-add-symbolic</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="menu-model">menu</property>
+                <property name="tooltip-text" translatable="yes">Menu</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton">
+                <property name="icon-name">preferences-system-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+    <!-- <child>
+      <object class="GtkStack">
+        <child>
+          <object class="GtkStackPage">
+          <child>
+          <object class="GtkListBox"></object>
+          </child>
+          </object>
+        </child>
+      </object>
+    </child> -->
+    <property name="default-height">300</property>
+    <property name="default-width">600</property>
+  </template>
+  <menu id="menu">
+    <section>
+      <item>
+        <attribute name="action">app.preferences</attribute>
+        <attribute name="icon">preferences-desktop-appearance-symbolic</attribute>
+        <attribute name="label">Preferences</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.about</attribute>
+        <attribute name="icon">help-about-symbolic</attribute>
+        <attribute name="label">About</attribute>
+      </item>
+      <item>
+        <attribute name="action">win.show-help-overlay</attribute>
+        <attribute name="icon">preferences-desktop-keyboard-shortcuts-symbolic</attribute>
+        <attribute name="label" translatable="yes">Keyboard Shortcuts</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

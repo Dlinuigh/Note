@@ -1,0 +1,6 @@
+data/org.lion_claw.note.desktop.in
+data/org.lion_claw.note.metainfo.xml.in
+data/org.lion_claw.note.gschema.xml
+src/main.c
+src/note-window.c
+src/note-window.ui

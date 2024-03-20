@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <!-- interface-name note.ui -->
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="Note" parent="GtkBox">
+    <child>
+      <object class="AdwActionRow" id="title">
+        <property name="hexpand">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="date"/>
+    </child>
+  </template>
+</interface>

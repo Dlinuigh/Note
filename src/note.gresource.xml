@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/lion_claw/note">
+    <file preprocess="xml-stripblanks">note-window.ui</file>
+    <file preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
+	  <file preprocess="xml-stripblanks">note-preferences.ui</file>
+    <file preprocess="xml-stripblanks">note.ui</file>
+  </gresource>
+</gresources>

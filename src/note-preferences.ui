@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.16.0 -->
+<interface>
+  <!-- interface-name note-preferences.ui -->
+  <requires lib="Adw" version="1.0"/>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <template class="NotePreferences" parent="AdwPreferencesWindow">
+    <child>
+      <object class="AdwPreferencesPage" id="apperence">
+        <property name="icon-name">preferences-desktop-appearance-symbolic</property>
+        <property name="title">Apperence</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="description">This is a short describe of settings</property>
+            <property name="title">Show youself</property>
+            <child>
+              <object class="AdwPreferencesRow">
+                <property name="title">Hate is my power</property>
+                <child>
+                  <object class="AdwSwitchRow">
+                    <property name="icon-name">battery-action-symbolic</property>
+                    <property name="subtitle">this is my life, said a robot.</property>
+                    <property name="title">Make this robot live.</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesPage" id="editor">
+        <property name="icon-name">document-edit-symbolic</property>
+        <property name="title">Editor</property>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesPage" id="sync">
+        <property name="icon-name">emblem-synchronizing-symbolic</property>
+        <property name="title">Sync</property>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesPage" id="save">
+        <property name="icon-name">document-save-symbolic</property>
+        <property name="title">Save</property>
+      </object>
+    </child>
+  </template>
+</interface>
