@@ -142,6 +142,7 @@ static const GActionEntry app_actions[] = {
 	{"about", note_application_about_action},
 	{"preferences", note_preferences_action},
 	{"add", note_add_action},
+	// {"edit", note_edit_action},
 };
 
 static void
@@ -154,4 +155,5 @@ note_application_init(NoteApplication *self)
 	gtk_application_set_accels_for_action(GTK_APPLICATION(self),
 										  "app.quit",
 										  (const char *[]){"<primary>q", NULL});
+										  
 }

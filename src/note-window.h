@@ -28,9 +28,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (NoteWindow, note_window, NOTE, WINDOW, AdwApplicationWindow)
 
-#define NOTE_TYPE_NOTE (note_note_get_type())
-G_DECLARE_FINAL_TYPE (Note, note_note, NOTE, NOTE, GtkBox);
-
 G_END_DECLS
 
 extern void note_add_init(NoteWindow* );
