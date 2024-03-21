@@ -31,6 +31,7 @@ struct _NoteWindow
 	AdwHeaderBar *header_bar;
 	AdwTabView *page;
 	GtkButton *add_page;
+	GtkListBox *list;
 };
 
 struct _Note
@@ -57,6 +58,7 @@ note_window_class_init(NoteWindowClass *klass)
 	// gtk_widget_class_bind_template_child(widget_class, NoteWindow, note_add);
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, page);
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, add_page);
+	// gtk_widget_class_bind_template_child(widget_class, NoteWindow, list);
 }
 
 static void note_note_class_init(NoteClass *klass)
@@ -82,6 +84,7 @@ static int get_real_n_char(const char* s, int n){
 	// 	}
 	// }
 	// return j;
+	//TODO - 计划将中文显示扩展到所有地方。
 	int real_n=0;
 	// int len = strlen(s);
 	int num = 0;
@@ -109,22 +112,40 @@ static int get_real_n_char(const char* s, int n){
 	return real_n;
 }
 
-static void window_refresh(NoteWindow *self){
-	
+static void list_add(GtkWidget* list_box, const char* content, const char* date){
+	Note *note = g_object_new(NOTE_TYPE_NOTE, NULL);
+	GtkWidget* image;
+	char title[66];
+	char subtitle[186];
+	GDateTime* datetime = g_date_time_new_from_iso8601(date, NULL);
+	if(g_date_time_difference(g_date_time_new_now_local(), datetime)/G_TIME_SPAN_HOUR > 6){
+		// adw_action_row_set_icon_name(note->title,"changes-prevent-symbolic");
+		image = gtk_image_new_from_icon_name("changes-prevent-symbolic");
+	}else{
+		// adw_action_row_set_icon_name(note->title,"changes-allow-symbolic");
+		image = gtk_image_new_from_icon_name("changes-allow-symbolic");
+	}
+	int rn = get_real_n_char(content, 10);
+	strncpy(title, content, rn);
+	title[rn]='\0';
+	adw_action_row_add_prefix(note->title,image);
+	//TODO - title 不支持中文，这是个问题。我知道了，utf8本身支持中文，但是由于我截断了，所以编码失败。
+	// pango_parse_markup(title, 10, 0,&attr_list, &markup, NULL,NULL);
+	// adw_preferences_row_set_use_markup(ADW_PREFERENCES_ROW(note->title), true);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(note->title), title);
+	rn = get_real_n_char(content, 30);
+	strncpy(subtitle, content, rn);
+	subtitle[rn]='\0';
+	//FIXME - 但是副标题却可以支持中文。而且不用任何改动。由于副标题的容量很大，但是每次测试我只有一点文本。
+	adw_action_row_set_subtitle(note->title, subtitle);
+	adw_action_row_set_subtitle_lines(note->title, 2);
+	gtk_label_set_label(note->date, g_date_time_format(datetime, "%F %T"));
+	gtk_list_box_append(GTK_LIST_BOX(list_box), GTK_WIDGET(note));
+	g_free(datetime);
 }
 
-
-static void
-note_window_init(NoteWindow *self)
-{
-	gtk_widget_init_template(GTK_WIDGET(self));
-	// self->header_bar = ADW_HEADER_BAR(adw_header_bar_new());
-	// self->page=ADW_TAB_VIEW(adw_tab_view_new());
-	GtkWidget *list_box = gtk_list_box_new();
-	GtkWidget* scroll = gtk_scrolled_window_new();
-	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), list_box);
-	gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(scroll), true);
-	AdwTabPage *list = adw_tab_view_append(self->page, scroll);
+static void window_refresh(NoteWindow *self){
+	//TODO - 刷新主体窗口内容，用来显示发生的变化。
 	filename = g_strconcat(g_get_home_dir(), "/.local/share/Note/data.json", NULL);
 	// strcat(filename, "/Documents/file.txt"); // 代码会导致不能自动释放资源。
 	GFile *file = g_file_new_for_path(filename);
@@ -151,6 +172,7 @@ note_window_init(NoteWindow *self)
 	// g_free(parser);
 	// JsonParser* parser = json_parser_new();
 	// json_parser_load_from_file(parser, filename, NULL);
+	//TODO - 由于打开的json不一定要立刻关闭，全局变量更有效。可以节省窗口刷新的消耗。
 	JsonNode* root = json_parser_get_root(parser);
 	JsonObject* root_obj = json_node_dup_object(root);
 	JsonNode* dt_node = json_object_get_member(root_obj, "timestamp");
@@ -160,12 +182,8 @@ note_window_init(NoteWindow *self)
 
 	printf("%d\n", num);
 	// PangoAttrList* attr_list=pango_attr_list_new();
-	char title[66];
-	char subtitle[186];
 	// char* markup;
 	for(int i=0;i<num;i++){
-		Note *note = g_object_new(NOTE_TYPE_NOTE, NULL);
-
 		// json_reader_read_member(reader, "timestamp");
 		// json_reader_read_element(reader, i);
 		// char* date = json_reader_get_string_value(reader);
@@ -182,37 +200,28 @@ note_window_init(NoteWindow *self)
 		// g_object_unref (parser);
 		char* date = json_array_get_string_element(dt, i);
 		char* content = json_array_get_string_element(cont, i);
-		GtkWidget* image;
-		GDateTime* datetime = g_date_time_new_from_iso8601(date, NULL);
-		if(g_date_time_difference(g_date_time_new_now_local(), datetime)/G_TIME_SPAN_HOUR > 6){
-			// adw_action_row_set_icon_name(note->title,"changes-prevent-symbolic");
-			image = gtk_image_new_from_icon_name("changes-prevent-symbolic");
-		}else{
-			// adw_action_row_set_icon_name(note->title,"changes-allow-symbolic");
-			image = gtk_image_new_from_icon_name("changes-allow-symbolic");
-		}
-		int rn = get_real_n_char(content, 10);
-		strncpy(title, content, rn);
-		title[rn]='\0';
-		adw_action_row_add_prefix(note->title,image);
-		//TODO - title 不支持中文，这是个问题。我知道了，utf8本身支持中文，但是由于我截断了，所以编码失败。
-		// pango_parse_markup(title, 10, 0,&attr_list, &markup, NULL,NULL);
-		// adw_preferences_row_set_use_markup(ADW_PREFERENCES_ROW(note->title), true);
-		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(note->title), title);
-		rn = get_real_n_char(content, 30);
-		strncpy(subtitle, content, rn);
-		subtitle[rn]='\0';
-		//FIXME - 但是副标题却可以支持中文。而且不用任何改动。由于副标题的容量很大，但是每次测试我只有一点文本。
-		adw_action_row_set_subtitle(note->title, subtitle);
-		adw_action_row_set_subtitle_lines(note->title, 2);
-		gtk_label_set_label(note->date, g_date_time_format(datetime, "%F %T"));
-		gtk_list_box_append(GTK_LIST_BOX(list_box), GTK_WIDGET(note));
-		g_free(datetime);
+		list_add(GTK_WIDGET(self->list), content, date);
 	}
+
+}
+
+
+static void
+note_window_init(NoteWindow *self)
+{
+	gtk_widget_init_template(GTK_WIDGET(self));
+	// self->header_bar = ADW_HEADER_BAR(adw_header_bar_new());
+	// self->page=ADW_TAB_VIEW(adw_tab_view_new());
 	
 	// gtk_label_set_label(note->date, "2024/3/20");
 	// note->title = ADW_ACTION_ROW(adw_action_row_new());
 	// gtk_list_box_append(GTK_LIST_BOX(list_box), GTK_WIDGET(note));
+	self->list = GTK_LIST_BOX(gtk_list_box_new());
+	GtkWidget* scroll = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
+	gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(scroll), true);
+	AdwTabPage *list = adw_tab_view_append(self->page, scroll);
+	window_refresh(self);
 	adw_tab_view_set_selected_page(self->page, list);
 	// gtk_widget_show(GTK_WIDGET(self->page));
 	// json_array_unref(cont);
@@ -250,7 +259,7 @@ void note_add_init(NoteWindow *self)
 	// printf("I am here\n");
 }
 
-static void json_add(const char* content){
+static void json_add(const char* content, const char* date){
 	
 	JsonParser* parser = json_parser_new();
 	json_parser_load_from_file(parser, filename, NULL);
@@ -280,7 +289,7 @@ static void json_add(const char* content){
 	
 	// json_builder_end_object(builder);
 
-	json_array_add_string_element(dt, g_date_time_format_iso8601(g_date_time_new_now_local()));
+	json_array_add_string_element(dt, date);
 	json_array_add_string_element(cont, content);
 
 	json_generator_set_root(gen, root);
@@ -318,10 +327,12 @@ void note_add_close(NoteWindow *self)
 	gtk_text_buffer_get_start_iter(text_buffer, &start);
 	gtk_text_buffer_get_end_iter(text_buffer, &end);
 	content = gtk_text_buffer_get_text(text_buffer, &start, &end, false);
-	json_add(content);
+	const char* date = g_date_time_format_iso8601(g_date_time_new_now_local());
+	json_add(content, date);
 	// g_file_set_contents(filename, content, -1, NULL);
 	adw_tab_view_close_page(self->page, add);
 	gtk_button_set_icon_name(self->add_page, "list-add-symbolic");
-	g_free(content); // TODO: 这里可以做一个优化，不要每次离开就立刻将text清理掉，改成程序关闭时。
-
+	list_add(GTK_WIDGET(self->list), content, date);
+	// g_free(content); 
+	// TODO: 这里可以做一个优化，不要每次离开就立刻将text清理掉，改成程序关闭时。
 }
