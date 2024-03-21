@@ -115,33 +115,33 @@ note_preferences_action(GSimpleAction *action,
 	gtk_window_present(GTK_WINDOW(window));
 }
 
-int selected_page=0;
+// int selected_page=0;
 
-static void
-note_add_action(GSimpleAction *action,
-				GVariant *parameter,
-				gpointer user_data)
-{
-	NoteApplication *self = user_data;
-	NoteWindow *window;
-	g_assert(NOTE_IS_APPLICATION(self));
-	window = NOTE_WINDOW(gtk_application_get_active_window(GTK_APPLICATION(self)));
-	if(selected_page==0){
-		note_add_init(window);
-		selected_page=1;
-	}else{
-		note_add_close(window);
-		selected_page=0;
-	}
+// static void
+// note_add_action(GSimpleAction *action,
+// 				GVariant *parameter,
+// 				gpointer user_data)
+// {
+// 	NoteApplication *self = user_data;
+// 	NoteWindow *window;
+// 	g_assert(NOTE_IS_APPLICATION(self));
+// 	window = NOTE_WINDOW(gtk_application_get_active_window(GTK_APPLICATION(self)));
+// 	if(selected_page==0){
+// 		note_add_init(window);
+// 		selected_page=1;
+// 	}else{
+// 		note_add_close(window);
+// 		selected_page=0;
+// 	}
 	
-	/* gtk_widget_set_visible (GTK_WIDGET (window->note_list), false); */
-}
+// 	/* gtk_widget_set_visible (GTK_WIDGET (window->note_list), false); */
+// }
 
 static const GActionEntry app_actions[] = {
 	{"quit", note_application_quit_action},
 	{"about", note_application_about_action},
 	{"preferences", note_preferences_action},
-	{"add", note_add_action},
+	// {"add", note_add_action},
 	// {"edit", note_edit_action},
 };
 

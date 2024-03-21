@@ -14,9 +14,7 @@
         <child type="top">
           <object class="AdwHeaderBar" id="header_bar">
             <child type="start">
-              <object class="GtkButton" id="add_page">
-                <property name="action-name">app.add</property>
-                <property name="icon-name">list-add-symbolic</property>
+              <object class="GtkButton" id="btn">
               </object>
             </child>
             <child type="end">
