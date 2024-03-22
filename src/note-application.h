@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 
 #define NOTE_TYPE_APPLICATION (note_application_get_type())
 
-G_DECLARE_FINAL_TYPE (NoteApplication, note_application, NOTE, APPLICATION, AdwApplication)
+G_DECLARE_FINAL_TYPE (NoteApplication, note_application, NOTE, APPLICATION, GtkApplication)
 
 NoteApplication *note_application_new (const char        *application_id,
                                        GApplicationFlags  flags);

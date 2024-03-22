@@ -29,7 +29,7 @@ struct _NoteApplication
 	AdwApplication parent_instance;
 };
 
-G_DEFINE_TYPE(NoteApplication, note_application, ADW_TYPE_APPLICATION)
+G_DEFINE_TYPE(NoteApplication, note_application, GTK_TYPE_APPLICATION)
 
 NoteApplication *
 note_application_new(const char *application_id,
