@@ -46,8 +46,9 @@ guint note_idx;
 guint note_len;
 GtkTextTagTable* table=NULL;
 
-void note_new(GtkButton* , NoteWindow* );
-void note_close(GtkButton*, GData*);
+void note_new(NoteWindow*);
+void note_close(NoteWindow*);
+static void page_close(AdwTabView*, AdwTabPage*);
 
 static void
 note_window_class_init(NoteWindowClass *klass)
@@ -131,7 +132,7 @@ static void note_show(AdwActionRow * note, char* content, char* date, gboolean i
 		}
 		GtkWidget* check = gtk_check_button_new();
 		adw_action_row_add_suffix(note, check);
-		gtk_widget_set_visible(check, false);
+		// gtk_widget_set_visible(check, false);
 		adw_action_row_set_activatable_widget(note, check);
 		adw_action_row_add_prefix(note, image);
 		adw_action_row_add_suffix(note, gtk_label_new(g_date_time_format(datetime, "%F %T")));
@@ -164,29 +165,33 @@ static void note_save_action(GtkButton* save, GData* user_data){
 	{
 		printf("Error, check the path\n");
 	}
+	// adw_tab_view_set_selected_page(self->page, adw_tab_view_get_nth_page(self->page, 0));
+	printf("%d\n", adw_tab_view_get_n_pages(self->page));
+	g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
 }
 
-static void note_edit_action(AdwActionRow* note, GData* user_data){
+static void note_edit_action(AdwActionRow* row, GData* user_data){
 	NoteWindow* self = g_datalist_get_data(&user_data, "NoteWindow");
-	AdwActionRow* row = g_datalist_get_data(&user_data, "selected_note");
+	// AdwActionRow* row = g_datalist_get_data(&user_data, "selected_note");
 	int idx = gtk_list_box_row_get_index(GTK_LIST_BOX_ROW(row));
 	char* content = json_array_get_string_element(cont, idx);
 	char* date = json_array_get_string_element(dt, idx);
 	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
 	gtk_text_buffer_set_text(buffer, content, -1);
 	GtkWidget* text = gtk_text_view_new_with_buffer(buffer);
+	self->save_btn = GTK_BUTTON(gtk_button_new());
+	gtk_button_set_icon_name(self->save_btn, "document-save-symbolic");
+	adw_header_bar_pack_start(self->header_bar, GTK_WIDGET(self->save_btn));
 	AdwTabPage *edit = adw_tab_view_append(self->page, text);
 	adw_tab_view_set_selected_page(self->page, edit);
-	GtkButton *save_edit = GTK_BUTTON(gtk_button_new());
-	gtk_button_set_icon_name(save_edit, "document-save-symbolic");
-	adw_header_bar_pack_start(self->header_bar, GTK_WIDGET(save_edit));
 	GData* datalist;
 	g_datalist_init(&datalist);
 	g_datalist_set_data(&datalist, "NoteWindow", self);
 	g_datalist_set_data(&datalist, "buffer", buffer);
 	g_datalist_set_data(&datalist, "row", row);
-	g_signal_connect(save_edit, "clicked", G_CALLBACK(note_save_action), datalist);
-	g_signal_connect(self->btn, "clicked", G_CALLBACK(note_new), self);
+	g_signal_connect(self->save_btn, "clicked", G_CALLBACK(note_save_action), datalist);
+	g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
+	printf("%d\n", adw_tab_view_get_n_pages(self->page));
 }
 
 static void list_add(NoteWindow* self, const char *content, const char *date, int idx)
@@ -196,7 +201,6 @@ static void list_add(NoteWindow* self, const char *content, const char *date, in
 	GData* datalist;
 	g_datalist_init(&datalist);
 	g_datalist_set_data(&datalist, "NoteWindow", self);
-	g_datalist_set_data(&datalist, "selected_note", note);
 	//NOTE - 连接成功，但是由于act信号不能通过点击触发。所以无法使用。
 	// 通过该函数可以证明上面的说法。 adw_action_row_activate(note);
 	note_show(note, content, date, false);
@@ -251,12 +255,15 @@ static void json_add(const char *content, const char *date)
 	}
 }
 
-void note_close(GtkButton *btn, GData* user_data)
+static void page_close(AdwTabView* view, AdwTabPage* page){
+	adw_tab_view_close_page_finish(view, page, true);
+}
+
+void note_close(NoteWindow* self)
 {
 	// NOTE - json member: id, timestamp, content, edited_times...
-	GtkTextBuffer* text_buffer = g_datalist_get_data(&user_data,"buffer");
-	NoteWindow* self = g_datalist_get_data(&user_data, "NoteWindow");
 	AdwTabPage *add = adw_tab_view_get_selected_page(self->page);
+	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_WIDGET(adw_tab_page_get_child(add)));
 	GtkTextIter start;
 	GtkTextIter end;
 	char *content = NULL;
@@ -268,22 +275,23 @@ void note_close(GtkButton *btn, GData* user_data)
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	list_add(self, content, date, note_len);
 	adw_tab_view_close_page(self->page, add);
+	//FIXME - 由于tab有默认参数导致需要确认才能关闭，所以页面原来一直没有被关闭。
 	//NOTE - 不知道为什么这里只能set否则不能跳转页面，让我想想，不能离开编辑页面。
-	adw_tab_view_set_selected_page(self->page, adw_tab_view_get_nth_page(self->page, 0));
-	g_signal_connect(btn, "clicked", G_CALLBACK(note_new), self);
+	g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
+	g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), add);
+	printf("%d\n", adw_tab_view_get_n_pages(self->page));
 	// TODO: 这里可以做一个优化，不要每次离开就立刻将text清理掉，改成程序关闭时。
 }
-void note_new(GtkButton* btn, NoteWindow *self)
+
+void note_new(NoteWindow* self)
 {
 	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
 	AdwTabPage *add = adw_tab_view_append(self->page, GTK_WIDGET(gtk_text_view_new_with_buffer(buffer)));
 	adw_tab_view_set_selected_page(self->page, add);
-	gtk_button_set_icon_name(btn, "go-previous-symbolic");
-	GData* datalist;
-	g_datalist_init(&datalist);
-	g_datalist_set_data(&datalist, "buffer", buffer);
-	g_datalist_set_data(&datalist, "NoteWindow", self);
-	g_signal_connect(btn, "clicked", G_CALLBACK(note_close), datalist);
+	gtk_button_set_icon_name(self->btn, "go-previous-symbolic");
+	g_signal_handlers_disconnect_by_func(self->btn, G_CALLBACK(note_new), self);
+	g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_close), self);
+	printf("%d\n", adw_tab_view_get_n_pages(self->page));
 }
 
 static void
@@ -298,6 +306,7 @@ note_window_init(NoteWindow *self)
 	json_init();
 	window_refresh(self, note_len);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
-	adw_tab_view_set_selected_page(self->page, list);
-	g_signal_connect(self->btn, "clicked", G_CALLBACK(note_new), self);
+	adw_tab_view_set_selected_page(self->page, list);	
+	g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
+	printf("%d\n", adw_tab_view_get_n_pages(self->page));
 }
