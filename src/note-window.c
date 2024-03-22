@@ -113,7 +113,7 @@ static void json_edit_by_idx(JsonArray* array, guint idx, JsonNode* element_node
 	}
 }
 
-static void note_show(AdwActionRow * note, char* content, char* date, gboolean is_exist){
+static void note_show(AdwActionRow * note, const char* content, const char* date, gboolean is_exist){
 	char title[66];
 	char subtitle[186];
 	int rn = get_real_n_char(content, 10);
@@ -128,6 +128,7 @@ static void note_show(AdwActionRow * note, char* content, char* date, gboolean i
 	if(!is_exist){
 		GtkWidget *image;
 		GDateTime *datetime = g_date_time_new_from_iso8601(date, NULL);
+		GtkWidget* check = gtk_check_button_new();
 		if (g_date_time_difference(g_date_time_new_now_local(), datetime) / G_TIME_SPAN_HOUR > 6)
 		{
 			image = gtk_image_new_from_icon_name("changes-prevent-symbolic");
@@ -136,8 +137,6 @@ static void note_show(AdwActionRow * note, char* content, char* date, gboolean i
 		{
 			image = gtk_image_new_from_icon_name("changes-allow-symbolic");
 		}
-		GtkWidget* check = gtk_check_button_new();
-		
 		adw_action_row_add_suffix(note, check);
 		adw_action_row_set_activatable_widget(note, check);
 		adw_action_row_add_prefix(note, image);
@@ -152,17 +151,17 @@ static void note_save_action(GtkButton* save, NoteWindow* self){
 	GtkTextIter end;
 	AdwTabPage* page = adw_tab_view_get_nth_page(self->page, 1);
 	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(page)));
-	char* date=json_array_get_string_element(dt, note_idx);
+	const char* date=json_array_get_string_element(dt, note_idx);
 	AdwActionRow* note = ADW_ACTION_ROW(gtk_list_box_get_row_at_index(self->list, note_idx));
+	const char* content = NULL;
 	gtk_text_buffer_get_start_iter(text_buffer, &start);
 	gtk_text_buffer_get_end_iter(text_buffer, &end);
-	char *content = gtk_text_buffer_get_text(text_buffer, &start, &end, false);
-	json_array_foreach_element(cont, json_edit_by_idx, content);
+	content = gtk_text_buffer_get_text(text_buffer, &start, &end, false);
+	json_array_foreach_element(cont, json_edit_by_idx, (gpointer)content);
 	note_show(note, content, date, true);
 	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
 	adw_tab_view_close_page(self->page, page);
-	gchar *str = json_generator_to_data(gen, NULL);
-	g_file_set_contents(filename, str, -1, NULL);
+	json_generator_to_file(gen, filename, NULL);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->page, page_close_id);
@@ -172,8 +171,8 @@ static void note_save_action(GtkButton* save, NoteWindow* self){
 static void note_edit_to_new(GData* user_data){
 	GtkButton* save = g_datalist_get_data(&user_data, "save");
 	NoteWindow* self = g_datalist_get_data(&user_data, "NoteWindow");
-	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
 	AdwTabPage* page = adw_tab_view_get_nth_page(self->page, 1);
+	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
 	adw_tab_view_close_page(self->page, page);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
@@ -183,21 +182,22 @@ static void note_edit_to_new(GData* user_data){
 }
 
 static void note_edit_action(AdwActionRow* row, NoteWindow* self){
-	int idx = gtk_list_box_row_get_index(GTK_LIST_BOX_ROW(row));
-	char* content = json_array_get_string_element(cont, idx);
-	char* date = json_array_get_string_element(dt, idx);
-	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
-	gtk_text_buffer_set_text(buffer, content, -1);
-	GtkWidget* text = gtk_text_view_new_with_buffer(buffer);
+	GtkTextBuffer* buffer = NULL;
+	GtkWidget* text = NULL;
 	GtkButton* btn = GTK_BUTTON(gtk_button_new());
+	AdwTabPage *edit = NULL;
+	GData* dl;
+	const char* content = NULL;
+	note_idx = gtk_list_box_row_get_index(GTK_LIST_BOX_ROW(row));
+	content = json_array_get_string_element(cont, note_idx);
+	buffer = gtk_text_buffer_new(table);
+	text = gtk_text_view_new_with_buffer(buffer);
+	edit = adw_tab_view_append(self->page, text);
+	gtk_text_buffer_set_text(buffer, content, -1);
 	gtk_button_set_icon_name(btn, "document-save-symbolic");
 	adw_header_bar_pack_start(self->header_bar, GTK_WIDGET(btn));
-	AdwTabPage *edit = adw_tab_view_append(self->page, text);
-	// adw_tab_page_set_title(edit, "Edit");
-	int i = adw_tab_view_get_page_position(self->page, edit);
 	adw_tab_view_set_selected_page(self->page, edit);
 	g_signal_connect(btn, "clicked", G_CALLBACK(note_save_action), self);
-	GData* dl;
 	g_datalist_init(&dl);
 	g_datalist_set_data(&dl, "NoteWindow", self);
 	g_datalist_set_data(&dl, "save", btn);
@@ -220,18 +220,23 @@ static void window_refresh(NoteWindow *self, int num)
 {
 	for (int i = 0; i < num; i++)
 	{
-		char *date = json_array_get_string_element(dt, i);
-		char *content = json_array_get_string_element(cont, i);
+		const char *date = json_array_get_string_element(dt, i);
+		const char *content = json_array_get_string_element(cont, i);
 		if(content==NULL){
-			continue;
+			list_add(self, "", date, i);
+		}else{
+			list_add(self, content, date, i);
 		}
-		list_add(self, content, date, i);
 	}
 }
 
 static void json_init(void){
+	GFile* file=NULL;
+	JsonObject* root_obj=NULL;
+	JsonNode* dt_node=NULL;
+	JsonNode* cont_node=NULL;
 	filename = g_strconcat(g_get_home_dir(), "/.local/share/Note/data.json", NULL);
-	GFile *file = g_file_new_for_path(filename);
+	file = g_file_new_for_path(filename);
 	if (g_file_query_exists(file, NULL) != true)
 		g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
 	g_object_unref(file);
@@ -242,10 +247,10 @@ static void json_init(void){
 	note_len = json_reader_count_elements(reader);
 	g_object_unref(reader);
 	root = json_parser_get_root(parser);
-	JsonObject *root_obj = json_node_dup_object(root);
-	JsonNode *dt_node = json_object_get_member(root_obj, "timestamp");
+	root_obj = json_node_dup_object(root);
+	dt_node = json_object_get_member(root_obj, "timestamp");
 	dt = json_node_get_array(dt_node);
-	JsonNode *cont_node = json_object_get_member(root_obj, "content");
+	cont_node = json_object_get_member(root_obj, "content");
 	cont = json_node_get_array(cont_node);
 	gen = json_generator_new();
 	json_generator_set_root(gen, root);
@@ -255,8 +260,7 @@ static void json_add(const char *content, const char *date)
 {
 	json_array_add_string_element(dt, date);
 	json_array_add_string_element(cont, content);
-	gchar *str = json_generator_to_data(gen, NULL);
-	g_file_set_contents(filename, str, -1, NULL);
+	json_generator_to_file(gen, filename, NULL);
 }
 
 static void page_close(AdwTabView* view, AdwTabPage* page){
@@ -266,15 +270,15 @@ static void page_close(AdwTabView* view, AdwTabPage* page){
 void note_close(NoteWindow* self)
 {
 	AdwTabPage *add = adw_tab_view_get_nth_page(self->page, 1);
-	int i= adw_tab_view_get_n_pages(self->page);
 	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(add)));
 	GtkTextIter start;
 	GtkTextIter end;
-	char *content = NULL;
+	char* content=NULL;
+	const char* date=NULL;
 	gtk_text_buffer_get_start_iter(text_buffer, &start);
 	gtk_text_buffer_get_end_iter(text_buffer, &end);
 	content = gtk_text_buffer_get_text(text_buffer, &start, &end, false);
-	const char *date = g_date_time_format_iso8601(g_date_time_new_now_local());
+	date = g_date_time_format_iso8601(g_date_time_new_now_local());
 	json_add(content, date);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	list_add(self, content, date, note_len);
@@ -290,7 +294,6 @@ void note_new(NoteWindow* self)
 {
 	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
 	AdwTabPage *add = adw_tab_view_append(self->page, GTK_WIDGET(gtk_text_view_new_with_buffer(buffer)));
-	// adw_tab_page_set_title(add, "New");
 	adw_tab_view_set_selected_page(self->page, add);
 	gtk_button_set_icon_name(self->btn, "go-previous-symbolic");
 	g_signal_handler_disconnect(self->btn, note_new_id);
@@ -300,16 +303,15 @@ void note_new(NoteWindow* self)
 static void
 note_window_init(NoteWindow *self)
 {
-	gtk_widget_init_template(GTK_WIDGET(self));
-	self->list = GTK_LIST_BOX(gtk_list_box_new());
 	GtkWidget *scroll = gtk_scrolled_window_new();
+	AdwTabPage *list = NULL;
+	gtk_widget_init_template(GTK_WIDGET(self));
+	list = adw_tab_view_append(self->page, scroll);
+	self->list = GTK_LIST_BOX(gtk_list_box_new());
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
 	gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(scroll), true);
-	AdwTabPage *list = adw_tab_view_append(self->page, scroll);
-	// adw_tab_page_set_title(list, "List");
 	json_init();
 	window_refresh(self, note_len);
-	// adw_tab_bar_set_view(self->tabar, self->page);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	adw_tab_view_set_selected_page(self->page, list);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
