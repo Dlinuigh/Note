@@ -41,8 +41,8 @@ JsonParser* parser;
 JsonNode* root;
 JsonArray* dt;
 JsonArray* cont;
-JsonReader* reader;
 JsonGenerator* gen;
+JsonBuilder* builder;
 guint note_idx;
 guint note_len;
 GtkTextTagTable* table=NULL;
@@ -237,23 +237,34 @@ static void json_init(void){
 	JsonNode* cont_node=NULL;
 	filename = g_strconcat(g_get_home_dir(), "/.local/share/Note/data.json", NULL);
 	file = g_file_new_for_path(filename);
-	if (g_file_query_exists(file, NULL) != true)
-		g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
-	g_object_unref(file);
+	gen = json_generator_new();
 	parser = json_parser_new();
 	json_parser_load_from_file(parser, filename, NULL);
-	reader = json_reader_new(json_parser_get_root(parser));
-	json_reader_read_member(reader, "timestamp");
-	note_len = json_reader_count_elements(reader);
-	g_object_unref(reader);
-	root = json_parser_get_root(parser);
+	if (g_file_query_exists(file, NULL) != true || 
+		(root = json_parser_get_root(parser))==NULL
+		){
+		builder = json_builder_new();
+		json_builder_begin_object(builder);
+		json_builder_set_member_name(builder, "timestamp");
+		json_builder_begin_array(builder);
+		json_builder_end_array(builder);
+		json_builder_set_member_name(builder, "content");
+		json_builder_begin_array(builder);
+		json_builder_end_array(builder);
+		json_builder_end_object(builder);
+		root = json_builder_get_root(builder);
+		json_generator_set_root(gen, root);
+		json_generator_to_file(gen, filename, NULL);
+	}else{
+		json_generator_set_root(gen, root);
+	}
 	root_obj = json_node_dup_object(root);
 	dt_node = json_object_get_member(root_obj, "timestamp");
 	dt = json_node_get_array(dt_node);
 	cont_node = json_object_get_member(root_obj, "content");
 	cont = json_node_get_array(cont_node);
-	gen = json_generator_new();
-	json_generator_set_root(gen, root);
+	note_len = json_array_get_length(dt);
+	g_object_unref(file);
 }
 
 static void json_add(const char *content, const char *date)
