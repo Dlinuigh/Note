@@ -5,34 +5,14 @@
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.4"/>
-  <template class="NoteWindow" parent="GtkApplicationWindow">
-    <property name="child">
+  <template class="NoteWindow" parent="AdwApplicationWindow">
+    <property name="content">
       <object class="AdwToolbarView">
         <property name="content">
           <object class="AdwTabView" id="page"/>
         </property>
         <child type="top">
-          <object class="AdwTabBar" id="tabar">
-            <property name="autohide">False</property>
-          </object>
-        </child>
-      </object>
-    </property>
-    <!-- <child>
-      <object class="GtkStack">
-        <child>
-          <object class="GtkStackPage">
-          <child>
-          <object class="GtkListBox"></object>
-          </child>
-          </object>
-        </child>
-      </object>
-    </child> -->
-    <property name="default-height">300</property>
-    <property name="default-width">600</property>
-    <property name="titlebar">
-      <object class="AdwHeaderBar" id="header_bar">
+          <object class="AdwHeaderBar" id="header_bar">
         <child type="start">
           <object class="GtkButton" id="btn">
             <property name="icon-name">list-add-symbolic</property>
@@ -51,7 +31,22 @@
           </object>
         </child>
       </object>
+        </child>
+      </object>
     </property>
+    <!-- <child>
+      <object class="GtkStack">
+        <child>
+          <object class="GtkStackPage">
+          <child>
+          <object class="GtkListBox"></object>
+          </child>
+          </object>
+        </child>
+      </object>
+    </child> -->
+    <property name="default-height">300</property>
+    <property name="default-width">600</property>
   </template>
   <menu id="menu">
     <section>

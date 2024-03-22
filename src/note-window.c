@@ -25,16 +25,16 @@
 #include <json-glib/json-gobject.h>
 struct _NoteWindow
 {
-	GtkApplicationWindow parent_instance;
+	AdwApplicationWindow parent_instance;
 
 	AdwHeaderBar *header_bar;
 	AdwTabView *page;
 	GtkButton *btn;
 	GtkListBox *list;
-	AdwTabBar* tabar;
+	// AdwTabBar* tabar;
 };
 
-G_DEFINE_FINAL_TYPE(NoteWindow, note_window, GTK_TYPE_APPLICATION_WINDOW)
+G_DEFINE_FINAL_TYPE(NoteWindow, note_window, ADW_TYPE_APPLICATION_WINDOW)
 
 char *filename;
 JsonParser* parser;
@@ -64,7 +64,7 @@ note_window_class_init(NoteWindowClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, header_bar);
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, page);
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, btn);
-	gtk_widget_class_bind_template_child(widget_class, NoteWindow, tabar);
+	// gtk_widget_class_bind_template_child(widget_class, NoteWindow, tabar);
 }
 
 static int get_real_n_char(const char *s, int n)
@@ -137,8 +137,8 @@ static void note_show(AdwActionRow * note, char* content, char* date, gboolean i
 			image = gtk_image_new_from_icon_name("changes-allow-symbolic");
 		}
 		GtkWidget* check = gtk_check_button_new();
+		
 		adw_action_row_add_suffix(note, check);
-		// gtk_widget_set_visible(check, false);
 		adw_action_row_set_activatable_widget(note, check);
 		adw_action_row_add_prefix(note, image);
 		adw_action_row_add_suffix(note, gtk_label_new(g_date_time_format(datetime, "%F %T")));
@@ -163,8 +163,6 @@ static void note_save_action(GtkButton* save, NoteWindow* self){
 	adw_tab_view_close_page(self->page, page);
 	gchar *str = json_generator_to_data(gen, NULL);
 	g_file_set_contents(filename, str, -1, NULL);
-	// g_signal_handlers_disconnect_by_func(self->page, G_CALLBACK(page_close), NULL);
-	// g_signal_handler_disconnect(self->page, page_close_id);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->page, page_close_id);
@@ -172,7 +170,6 @@ static void note_save_action(GtkButton* save, NoteWindow* self){
 }
 
 static void note_edit_to_new(GData* user_data){
-	printf("Note Edit To New\n");
 	GtkButton* save = g_datalist_get_data(&user_data, "save");
 	NoteWindow* self = g_datalist_get_data(&user_data, "NoteWindow");
 	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
@@ -180,8 +177,6 @@ static void note_edit_to_new(GData* user_data){
 	adw_tab_view_close_page(self->page, page);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
-	// g_signal_handlers_disconnect_by_func(self->page, G_CALLBACK(page_close), NULL);
-	// g_signal_handler_disconnect(self->page, page_close_id);
 	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
 	note_new(self);
@@ -198,7 +193,7 @@ static void note_edit_action(AdwActionRow* row, NoteWindow* self){
 	gtk_button_set_icon_name(btn, "document-save-symbolic");
 	adw_header_bar_pack_start(self->header_bar, GTK_WIDGET(btn));
 	AdwTabPage *edit = adw_tab_view_append(self->page, text);
-	adw_tab_page_set_title(edit, "Edit");
+	// adw_tab_page_set_title(edit, "Edit");
 	int i = adw_tab_view_get_page_position(self->page, edit);
 	adw_tab_view_set_selected_page(self->page, edit);
 	g_signal_connect(btn, "clicked", G_CALLBACK(note_save_action), self);
@@ -270,8 +265,6 @@ static void page_close(AdwTabView* view, AdwTabPage* page){
 
 void note_close(NoteWindow* self)
 {
-	printf("Note Close\n");
-	// NOTE - json member: id, timestamp, content, edited_times...
 	AdwTabPage *add = adw_tab_view_get_nth_page(self->page, 1);
 	int i= adw_tab_view_get_n_pages(self->page);
 	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(add)));
@@ -286,12 +279,7 @@ void note_close(NoteWindow* self)
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	list_add(self, content, date, note_len);
 	adw_tab_view_close_page(self->page, add);
-	//FIXME - 由于tab有默认参数导致需要确认才能关闭，所以页面原来一直没有被关闭。
-	//NOTE - 不知道为什么这里只能set否则不能跳转页面，让我想想，不能离开编辑页面。
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
-	// g_signal_handlers_disconnect_by_func(self->btn, G_CALLBACK(note_edit_to_new), NULL);
-	// g_signal_handlers_disconnect_by_func(self->page, G_CALLBACK(page_close), NULL);
-	// g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	g_signal_handler_disconnect(self->btn, note_close_id);
 	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), add);
@@ -300,16 +288,12 @@ void note_close(NoteWindow* self)
 
 void note_new(NoteWindow* self)
 {
-	printf("Note New\n");
 	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
 	AdwTabPage *add = adw_tab_view_append(self->page, GTK_WIDGET(gtk_text_view_new_with_buffer(buffer)));
-	adw_tab_page_set_title(add, "New");
-	// int i = adw_tab_view_get_page_position(self->page, add);
+	// adw_tab_page_set_title(add, "New");
 	adw_tab_view_set_selected_page(self->page, add);
 	gtk_button_set_icon_name(self->btn, "go-previous-symbolic");
-	// g_signal_handlers_disconnect_by_func(self->btn, G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->btn, note_new_id);
-	// g_signal_handler_disconnect(self->btn, note_close_id);
 	note_close_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_close), self);
 }
 
@@ -322,11 +306,10 @@ note_window_init(NoteWindow *self)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
 	gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(scroll), true);
 	AdwTabPage *list = adw_tab_view_append(self->page, scroll);
-	// int i = adw_tab_view_get_page_position(self->page, list);
-	adw_tab_page_set_title(list, "List");
+	// adw_tab_page_set_title(list, "List");
 	json_init();
 	window_refresh(self, note_len);
-	adw_tab_bar_set_view(self->tabar, self->page);
+	// adw_tab_bar_set_view(self->tabar, self->page);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	adw_tab_view_set_selected_page(self->page, list);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
