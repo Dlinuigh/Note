@@ -150,7 +150,7 @@ static void note_show(AdwActionRow * note, char* content, char* date, gboolean i
 static void note_save_action(GtkButton* save, NoteWindow* self){
 	GtkTextIter start;
 	GtkTextIter end;
-	AdwTabPage* page = adw_tab_view_get_selected_page(self->page);
+	AdwTabPage* page = adw_tab_view_get_nth_page(self->page, 1);
 	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(page)));
 	char* date=json_array_get_string_element(dt, note_idx);
 	AdwActionRow* note = ADW_ACTION_ROW(gtk_list_box_get_row_at_index(self->list, note_idx));
@@ -167,6 +167,7 @@ static void note_save_action(GtkButton* save, NoteWindow* self){
 	// g_signal_handler_disconnect(self->page, page_close_id);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
+	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
 }
 
@@ -175,13 +176,14 @@ static void note_edit_to_new(GData* user_data){
 	GtkButton* save = g_datalist_get_data(&user_data, "save");
 	NoteWindow* self = g_datalist_get_data(&user_data, "NoteWindow");
 	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
-	AdwTabPage* page = adw_tab_view_get_selected_page(self->page);
+	AdwTabPage* page = adw_tab_view_get_nth_page(self->page, 1);
 	adw_tab_view_close_page(self->page, page);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
 	// g_signal_handlers_disconnect_by_func(self->page, G_CALLBACK(page_close), NULL);
 	// g_signal_handler_disconnect(self->page, page_close_id);
-	// page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
+	g_signal_handler_disconnect(self->page, page_close_id);
+	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
 	note_new(self);
 }
 
@@ -197,6 +199,7 @@ static void note_edit_action(AdwActionRow* row, NoteWindow* self){
 	adw_header_bar_pack_start(self->header_bar, GTK_WIDGET(btn));
 	AdwTabPage *edit = adw_tab_view_append(self->page, text);
 	adw_tab_page_set_title(edit, "Edit");
+	int i = adw_tab_view_get_page_position(self->page, edit);
 	adw_tab_view_set_selected_page(self->page, edit);
 	g_signal_connect(btn, "clicked", G_CALLBACK(note_save_action), self);
 	GData* dl;
@@ -267,8 +270,10 @@ static void page_close(AdwTabView* view, AdwTabPage* page){
 
 void note_close(NoteWindow* self)
 {
+	printf("Note Close\n");
 	// NOTE - json member: id, timestamp, content, edited_times...
-	AdwTabPage *add = adw_tab_view_get_selected_page(self->page);
+	AdwTabPage *add = adw_tab_view_get_nth_page(self->page, 1);
+	int i= adw_tab_view_get_n_pages(self->page);
 	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(add)));
 	GtkTextIter start;
 	GtkTextIter end;
@@ -287,20 +292,24 @@ void note_close(NoteWindow* self)
 	// g_signal_handlers_disconnect_by_func(self->btn, G_CALLBACK(note_edit_to_new), NULL);
 	// g_signal_handlers_disconnect_by_func(self->page, G_CALLBACK(page_close), NULL);
 	// g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
-	// g_signal_handler_disconnect(self->page, page_close_id);
+	g_signal_handler_disconnect(self->btn, note_close_id);
+	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), add);
-	// TODO: 这里可以做一个优化，不要每次离开就立刻将text清理掉，改成程序关闭时。
+	//TODO: 这里可以做一个优化，不要每次离开就立刻将text清理掉，改成程序关闭时。
 }
 
 void note_new(NoteWindow* self)
 {
+	printf("Note New\n");
 	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
 	AdwTabPage *add = adw_tab_view_append(self->page, GTK_WIDGET(gtk_text_view_new_with_buffer(buffer)));
 	adw_tab_page_set_title(add, "New");
+	// int i = adw_tab_view_get_page_position(self->page, add);
 	adw_tab_view_set_selected_page(self->page, add);
 	gtk_button_set_icon_name(self->btn, "go-previous-symbolic");
 	// g_signal_handlers_disconnect_by_func(self->btn, G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->btn, note_new_id);
+	// g_signal_handler_disconnect(self->btn, note_close_id);
 	note_close_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_close), self);
 }
 
@@ -313,11 +322,13 @@ note_window_init(NoteWindow *self)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
 	gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(scroll), true);
 	AdwTabPage *list = adw_tab_view_append(self->page, scroll);
+	// int i = adw_tab_view_get_page_position(self->page, list);
 	adw_tab_page_set_title(list, "List");
 	json_init();
 	window_refresh(self, note_len);
 	adw_tab_bar_set_view(self->tabar, self->page);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
-	adw_tab_view_set_selected_page(self->page, list);	
+	adw_tab_view_set_selected_page(self->page, list);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
+	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), list);
 }
