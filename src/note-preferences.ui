@@ -8,22 +8,65 @@
   <template class="NotePreferences" parent="AdwPreferencesWindow">
     <child>
       <object class="AdwPreferencesPage" id="apperence">
+        <property name="description">定义程序外观</property>
         <property name="icon-name">preferences-desktop-appearance-symbolic</property>
         <property name="title">Apperence</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="description">This is a short describe of settings</property>
-            <property name="title">Show youself</property>
+            <property name="description">日志列表外观设定</property>
+            <property name="title">Note List</property>
             <child>
               <object class="AdwPreferencesRow">
-                <property name="title">Hate is my power</property>
+                <property name="child">
+                  <object class="AdwEntryRow"/>
+                </property>
+                <property name="title">SubTitle Number</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesRow">
                 <child>
-                  <object class="AdwSwitchRow">
-                    <property name="icon-name">battery-action-symbolic</property>
-                    <property name="subtitle">this is my life, said a robot.</property>
-                    <property name="title">Make this robot live.</property>
-                  </object>
+                  <object class="AdwExpanderRow"/>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesRow">
+                <child>
+                  <object class="AdwEntryRow"/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesRow">
+                <property name="child">
+                  <object class="AdwEntryRow">
+                    <property name="input-purpose">number</property>
+                  </object>
+                </property>
+                <property name="title">Title Number</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesRow">
+                <property name="child">
+                  <object class="GtkScale">
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="step-increment">1.0</property>
+                        <property name="upper">3.0</property>
+                        <property name="value">1.0</property>
+                      </object>
+                    </property>
+                    <property name="digits">0</property>
+                    <property name="draw-value">True</property>
+                    <property name="fill-level">3.0</property>
+                    <property name="round-digits">0</property>
+                    <property name="show-fill-level">True</property>
+                    <property name="value-pos">bottom</property>
+                  </object>
+                </property>
+                <property name="title">SubTitle Line</property>
               </object>
             </child>
           </object>
@@ -34,6 +77,17 @@
       <object class="AdwPreferencesPage" id="editor">
         <property name="icon-name">document-edit-symbolic</property>
         <property name="title">Editor</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <child>
+              <object class="AdwPreferencesRow">
+                <child>
+                  <object class="GtkFontButton"/>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
     <child>
@@ -46,6 +100,33 @@
       <object class="AdwPreferencesPage" id="save">
         <property name="icon-name">document-save-symbolic</property>
         <property name="title">Save</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <child>
+              <object class="AdwPreferencesRow">
+                <child>
+                  <object class="AdwEntryRow">
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <child>
+              <object class="AdwPreferencesRow">
+                <child>
+                  <object class="AdwEntryRow">
+                    <property name="input-purpose">url</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
   </template>

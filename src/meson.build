@@ -1,3 +1,13 @@
+blueprints = custom_target('blueprints',
+  input: files(
+    'gtk/help-overlay.blp',
+    'note-preferences.blp',
+    'note-window.blp',
+  ),
+  output: '.',
+  command: [find_program('blueprint-compiler'), 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+)
+
 note_sources = [
   'main.c',
   'note-application.c',
@@ -13,10 +23,12 @@ note_deps = [
 
 note_sources += gnome.compile_resources('note-resources',
   'note.gresource.xml',
-  c_name: 'note'
+  c_name: 'note',
+  dependencies: blueprints,
 )
 
 executable('note', note_sources,
   dependencies: note_deps,
        install: true,
 )
+

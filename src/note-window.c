@@ -31,7 +31,6 @@ struct _NoteWindow
 	AdwTabView *page;
 	GtkButton *btn;
 	GtkListBox *list;
-	// AdwTabBar* tabar;
 };
 
 G_DEFINE_FINAL_TYPE(NoteWindow, note_window, ADW_TYPE_APPLICATION_WINDOW)
@@ -64,7 +63,6 @@ note_window_class_init(NoteWindowClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, header_bar);
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, page);
 	gtk_widget_class_bind_template_child(widget_class, NoteWindow, btn);
-	// gtk_widget_class_bind_template_child(widget_class, NoteWindow, tabar);
 }
 
 static int get_real_n_char(const char *s, int n)
@@ -114,6 +112,8 @@ static void json_edit_by_idx(JsonArray* array, guint idx, JsonNode* element_node
 }
 
 static void note_show(AdwActionRow * note, const char* content, const char* date, gboolean is_exist){
+	//TODO - 该部分将为设置喜好的主题内容，有许多外观选项可以自定义。
+	//TODO - 主标题的字符数量、副标题的字符数量和显示行数。主标题的内容摘要算法。
 	char title[66];
 	char subtitle[186];
 	int rn = get_real_n_char(content, 10);
@@ -129,6 +129,7 @@ static void note_show(AdwActionRow * note, const char* content, const char* date
 		GtkWidget *image;
 		GDateTime *datetime = g_date_time_new_from_iso8601(date, NULL);
 		GtkWidget* check = gtk_check_button_new();
+		//TODO - 文件加锁的时间阈值。文件加锁的设置开关。
 		if (g_date_time_difference(g_date_time_new_now_local(), datetime) / G_TIME_SPAN_HOUR > 6)
 		{
 			image = gtk_image_new_from_icon_name("changes-prevent-symbolic");
@@ -138,11 +139,11 @@ static void note_show(AdwActionRow * note, const char* content, const char* date
 			image = gtk_image_new_from_icon_name("changes-allow-symbolic");
 		}
 		adw_action_row_add_suffix(note, check);
+		gtk_widget_set_visible(check, false);
 		adw_action_row_set_activatable_widget(note, check);
 		adw_action_row_add_prefix(note, image);
+		//TODO - 时间的显示格式。可以自定义。
 		adw_action_row_add_suffix(note, gtk_label_new(g_date_time_format(datetime, "%F %T")));
-		//NOTE - 这里其实我们没有使用到这个widget, 仅仅用来显示icon,未来添加选中函数的时候可以绑定到一个checkbutton.
-		// 这个函数将会在批量删除note的时候引入。 上面暂时用invisible处理了。
 	}
 }
 
@@ -208,9 +209,6 @@ static void note_edit_action(AdwActionRow* row, NoteWindow* self){
 static void list_add(NoteWindow* self, const char *content, const char *date, int idx)
 {
 	AdwActionRow* note = ADW_ACTION_ROW( adw_action_row_new());
-	//NOTE - 引入datalist非常好地解决了导入参数不够的问题。并且也没有引入不成熟的方案。
-	//NOTE - 连接成功，但是由于act信号不能通过点击触发。所以无法使用。
-	// 通过该函数可以证明上面的说法。 adw_action_row_activate(note);
 	note_show(note, content, date, false);
 	gtk_list_box_append(GTK_LIST_BOX(self->list), GTK_WIDGET(note));
 	g_signal_connect(note, "activated", G_CALLBACK(note_edit_action), self);
@@ -235,6 +233,7 @@ static void json_init(void){
 	JsonObject* root_obj=NULL;
 	JsonNode* dt_node=NULL;
 	JsonNode* cont_node=NULL;
+	//TODO - 文件的保存地址将设置为可改变。并且假设大量的文件条目那么将文件进行分隔将会节省时间。
 	filename = g_strconcat(g_get_home_dir(), "/.local/share/Note/data.json", NULL);
 	file = g_file_new_for_path(filename);
 	if (g_file_query_exists(file, NULL) != true)
@@ -287,7 +286,6 @@ void note_close(NoteWindow* self)
 	g_signal_handler_disconnect(self->btn, note_close_id);
 	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), add);
-	//TODO: 这里可以做一个优化，不要每次离开就立刻将text清理掉，改成程序关闭时。
 }
 
 void note_new(NoteWindow* self)

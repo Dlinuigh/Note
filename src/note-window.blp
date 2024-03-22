@@ -1,0 +1,57 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $NoteWindow : Adw.ApplicationWindow {
+  content:   Adw.ToolbarView {
+    content:     Adw.TabView page {
+    }
+
+    ;
+
+    [top]
+    Adw.HeaderBar header_bar {
+      [start]
+      Button btn {
+        icon-name: "list-add-symbolic";
+      }
+
+      [end]
+      MenuButton {
+        icon-name: "open-menu-symbolic";
+        menu-model: menu;
+        tooltip-text: _("Menu");
+      }
+
+      [end]
+      Button {
+        icon-name: "preferences-system-symbolic";
+      }
+    }
+  }
+
+  ;
+  default-height: 300;
+  default-width: 600;
+}
+
+menu menu {
+  section {
+    item {
+      action: "app.preferences";
+      icon: "preferences-desktop-appearance-symbolic";
+      label: "Preferences";
+    }
+
+    item {
+      action: "app.about";
+      icon: "help-about-symbolic";
+      label: "About";
+    }
+
+    item {
+      action: "win.show-help-overlay";
+      icon: "preferences-desktop-keyboard-shortcuts-symbolic";
+      label: _("Keyboard Shortcuts");
+    }
+  }
+}

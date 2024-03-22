@@ -1,0 +1,102 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $NotePreferences : Adw.PreferencesWindow {
+  Adw.PreferencesPage apperence {
+    description: "定义程序外观";
+    icon-name: "preferences-desktop-appearance-symbolic";
+    title: "Apperence";
+
+    Adw.PreferencesGroup {
+      description: "日志列表外观设定";
+      title: "Note List";
+
+      Adw.PreferencesRow {
+        child:         Adw.EntryRow {
+        }
+
+        ;
+        title: "SubTitle Number";
+      }
+
+      Adw.PreferencesRow {
+        Adw.ExpanderRow {
+        }
+      }
+
+      Adw.PreferencesRow {
+        Adw.EntryRow {
+        }
+      }
+
+      Adw.PreferencesRow {
+        child:         Adw.EntryRow {
+          input-purpose: number;
+        }
+
+        ;
+        title: "Title Number";
+      }
+
+      Adw.PreferencesRow {
+        child:         Scale {
+          adjustment:           Adjustment {
+            step-increment: 1.0;
+            upper: 3.0;
+            value: 1.0;
+          }
+
+          ;
+          digits: 0;
+          draw-value: true;
+          fill-level: 3.0;
+          round-digits: 0;
+          show-fill-level: true;
+          value-pos: bottom;
+        }
+
+        ;
+        title: "SubTitle Line";
+      }
+    }
+  }
+
+  Adw.PreferencesPage editor {
+    icon-name: "document-edit-symbolic";
+    title: "Editor";
+
+    Adw.PreferencesGroup {
+      Adw.PreferencesRow {
+        FontButton {
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage sync {
+    icon-name: "emblem-synchronizing-symbolic";
+    title: "Sync";
+  }
+
+  Adw.PreferencesPage save {
+    icon-name: "document-save-symbolic";
+    title: "Save";
+
+    Adw.PreferencesGroup {
+      Adw.PreferencesRow {
+        Adw.EntryRow {
+          halign: center;
+          valign: center;
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      Adw.PreferencesRow {
+        Adw.EntryRow {
+          input-purpose: url;
+        }
+      }
+    }
+  }
+}
