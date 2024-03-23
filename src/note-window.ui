@@ -50,6 +50,9 @@
   </template>
   <menu id="menu">
     <section>
+		<item>
+			<attribute name="custom">theme</attribute>
+		</item>
       <item>
         <attribute name="action">app.preferences</attribute>
         <attribute name="icon">preferences-desktop-appearance-symbolic</attribute>

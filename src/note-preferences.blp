@@ -1,102 +1,266 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $NotePreferences : Adw.PreferencesWindow {
-  Adw.PreferencesPage apperence {
-    description: "定义程序外观";
-    icon-name: "preferences-desktop-appearance-symbolic";
-    title: "Apperence";
+template$NotePreferences: Adw.PreferencesWindow{
+	Adw.PreferencesPage apperence{
+		description: "定义程序外观";
+		icon-name: "preferences-desktop-appearance-symbolic";
+		title: "Apperence";
 
-    Adw.PreferencesGroup {
-      description: "日志列表外观设定";
-      title: "Note List";
+		Adw.PreferencesGroup{
+			description: "列表内容显示设定";
+			title: "列表内容";
+			Adw.ActionRow{
+				title: "标题显示字数";
+				Gtk.SpinButton{
+					digits: 0;
+					numeric: true;
+					// value:10;
+					adjustment: Gtk.Adjustment{
+						upper: 20;
+						lower: 1;
+						step-increment: 1;
+						value: 10;
+					};
+					climb-rate: 10;
+					// margin-start: 32;
+					// hexpand: true;
+					// width-request: 128;
+				}
+			}
+			Adw.ActionRow{
+				title: "副标题显示字数";
+				Gtk.SpinButton{
+					digits: 0;
+					numeric: true;
+					// value:10;
+					adjustment: Gtk.Adjustment{
+						upper: 50;
+						lower: 1;
+						step-increment: 1;
+						value: 30;
+					};
+					climb-rate: 10;
+					// margin-start: 32;
+					// hexpand: true;
+					// width-request: 128;
+				}
+			}
+			Adw.ActionRow{
+				title: "副标题显示行数";
+				Gtk.Scale{
+					fill-level: 10;
+					draw-value: true;
+					digits: 0;
+					value-pos: bottom;
+					hexpand: true;
+					round-digits: 0;
+					restrict-to-fill-level: true;
+					show-fill-level: true;
+					adjustment: Gtk.Adjustment{
+						upper: 3;
+						lower: 0;
+						step-increment: 1;
+						value: 2;
+					};
+				}
+			}
+		}
+		Adw.PreferencesGroup{
+			description: "程序界面外观设定";
+			title: "程序";
+			Adw.ExpanderRow use_custom_font_row{
+				title: "自定义字体";
+				enable-expansion: true;
+				expanded: bind use_custom_font.active;
+				[action]
+				Gtk.Switch use_custom_font{
+					active: bind use_custom_font_row.expanded;
+					halign: end;
+					valign: center;
+				}
+				Adw.ActionRow{
+					title: "程序边框字体";
+					Gtk.FontDialogButton{
+						// hexpand: true;
+					}
+				}
+				Adw.ActionRow{
+					title: "列表标题字体";
+					Gtk.FontDialogButton{
+						// hexpand: true;
+					}
+				}
+				Adw.ActionRow{
+					title: "列表副标题字体";
+					Gtk.FontDialogButton{
+						// hexpand: true;
+					}
+				}
+			}
+			Adw.ExpanderRow default_size_row{
+				title: "自定义窗口大小";
+				tooltip-text: "每一次打开程序都会优先显示的大小，倘若经过外部原因改变窗口大小，如果没有自定义，则会保存为当前与下一次的窗口默认值，外部原因包括快捷键、拖放。";
+				enable-expansion: true;
+				expanded: bind custom_size.active;
+				[action]
+				Gtk.Switch custom_size{
+					active: bind default_size_row.expanded;
+					halign: end;
+					valign: center;
+				}
+				Adw.ActionRow{
+					title: "高度";
+					Gtk.SpinButton{
+						digits: 0;
+						numeric: true;
+						// value:10;
+						adjustment: Gtk.Adjustment{
+							upper: 1600;
+							lower: 1;
+							step-increment: 1;
+							value: 300;
+						};
+						climb-rate: 100;
+					}
+				}
+				Adw.ActionRow{
+					title: "宽度";
+					Gtk.SpinButton{
+						digits: 0;
+						numeric: true;
+						// value:10;
+						adjustment: Gtk.Adjustment{
+							upper: 2550;
+							lower: 1;
+							step-increment: 1;
+							value: 600;
+						};
+						climb-rate: 100;
+					}
+				}
+			}
+		}
+	}
 
-      Adw.PreferencesRow {
-        child:         Adw.EntryRow {
-        }
+	Adw.PreferencesPage editor{
+		icon-name: "document-edit-symbolic";
+		title: "Editor";
 
-        ;
-        title: "SubTitle Number";
-      }
+		Adw.PreferencesGroup{
+			Adw.ExpanderRow editor_use_custom_font{
+				title: "自定义字体";
+				enable-expansion: true;
+				expanded: bind editor_use_custom_font_show.active;
+				[action]
+				Gtk.Switch editor_use_custom_font_show{
+					active: bind editor_use_custom_font.expanded;
+					halign: end;
+					valign: center;
+				}
+				Adw.ActionRow{
+					title: "编辑器字体";
+					Gtk.FontDialogButton{
+					}
+				}
+			}
+		}
 
-      Adw.PreferencesRow {
-        Adw.ExpanderRow {
-        }
-      }
+		Adw.PreferencesGroup{
+			Adw.SwitchRow{
+				title: "允许markup语法";
+			}
+			
+		}
+	}
 
-      Adw.PreferencesRow {
-        Adw.EntryRow {
-        }
-      }
+	Adw.PreferencesPage sync{
+		icon-name: "emblem-synchronizing-symbolic";
+		title: "Sync";
+		Adw.PreferencesGroup{
+			title: "远程存储配置";
+			Gtk.StackSwitcher{
+				stack: stack;
+			}
+			Gtk.Stack stack{
+				Gtk.StackPage{
+					title: "WebDav";
+					child: Gtk.ListBox{
+						Adw.EntryRow{title: "账号";}
+						Adw.EntryRow{title: "密码";}
+						Adw.EntryRow{title: "地址";}
+						Gtk.Button{label: "测试";}
+					};
+				}
+				Gtk.StackPage{
+					title: "NextCloud";
+					child: Gtk.ListBox{
+						Adw.EntryRow{title: "账号";}
+						Adw.EntryRow{title: "密码";}
+						Adw.EntryRow{title: "地址";}
+						Gtk.Button{label: "测试";}
+					};
+				}
+			}
+		}
+		Adw.PreferencesGroup{
+			title:"同步设置";
+		}
+	}
 
-      Adw.PreferencesRow {
-        child:         Adw.EntryRow {
-          input-purpose: number;
-        }
+	Adw.PreferencesPage save{
+		icon-name: "document-save-symbolic";
+		title: "Save";
 
-        ;
-        title: "Title Number";
-      }
+		Adw.PreferencesGroup{
+			Adw.ActionRow{
+				title: "编辑锁定时间";
+				tooltip-text: "当创建时间与当前试图编辑时间的时间间隔超过编辑权限时间，将只能查看而无法修改，但是仍然可以删除。当然了倘若通过系统进行编辑那么是无法阻止的。设置为-1则不会进行编辑锁定。设置为0将会在新建完成后立即锁定。";
+				Gtk.SpinButton{
+					digits: 0;
+					numeric: true;
+					// value:10;
+					adjustment: Gtk.Adjustment{
+						upper: 360000;
+						lower: -1;
+						step-increment: 1;
+						value: 6;
+					};
+					climb-rate: 10;
+					// margin-start: 32;
+					// hexpand: true;
+					// width-request: 128;
+				}
+			}
+		}
 
-      Adw.PreferencesRow {
-        child:         Scale {
-          adjustment:           Adjustment {
-            step-increment: 1.0;
-            upper: 3.0;
-            value: 1.0;
-          }
-
-          ;
-          digits: 0;
-          draw-value: true;
-          fill-level: 3.0;
-          round-digits: 0;
-          show-fill-level: true;
-          value-pos: bottom;
-        }
-
-        ;
-        title: "SubTitle Line";
-      }
-    }
-  }
-
-  Adw.PreferencesPage editor {
-    icon-name: "document-edit-symbolic";
-    title: "Editor";
-
-    Adw.PreferencesGroup {
-      Adw.PreferencesRow {
-        FontButton {
-        }
-      }
-    }
-  }
-
-  Adw.PreferencesPage sync {
-    icon-name: "emblem-synchronizing-symbolic";
-    title: "Sync";
-  }
-
-  Adw.PreferencesPage save {
-    icon-name: "document-save-symbolic";
-    title: "Save";
-
-    Adw.PreferencesGroup {
-      Adw.PreferencesRow {
-        Adw.EntryRow {
-          halign: center;
-          valign: center;
-        }
-      }
-    }
-
-    Adw.PreferencesGroup {
-      Adw.PreferencesRow {
-        Adw.EntryRow {
-          input-purpose: url;
-        }
-      }
-    }
-  }
+		Adw.PreferencesGroup{
+			title: "内容本地保存";
+			Adw.EntryRow {
+				title: "保存路径";
+				use-underline: true;
+				show-apply-button: true;
+				[suffix]
+				Gtk.Button{
+					icon-name: "document-open-symbolic";
+				}
+			}
+			Adw.ActionRow{
+				title: "多文件保存数量";
+				tooltip-text: "当数量达到阈值则会增加文件数量加速载入与编辑";
+				Gtk.SpinButton{
+					digits: 0;
+					numeric: true;
+					// value:10;
+					adjustment: Gtk.Adjustment{
+						upper: 100;
+						lower: 1;
+						step-increment: 1;
+						value: 1;
+					};
+					climb-rate: 10;
+				}
+				}
+		}
+	}
 }
