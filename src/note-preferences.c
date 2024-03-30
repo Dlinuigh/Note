@@ -31,6 +31,8 @@ static void
 note_preferences_init (NotePreferences *self)
 {
 	gtk_widget_init_template (GTK_WIDGET (self));
-	/* GSettings *settings = g_settings_new("org.lion_claw.note"); */
-	/* printf("%d,%d\n", g_settings_get_int(settings, "width"), g_settings_get_int(settings, "height")); */
+	GSettings *settings = g_settings_new("org.lion_claw.note");
+	GVariant* height =g_settings_get_default_value(settings, "height");
+	GVariant* width = g_settings_get_default_value(settings, "width"); 
+	printf("%d,%d\n", g_variant_get_uint32(height), g_variant_get_uint32(width));
 }

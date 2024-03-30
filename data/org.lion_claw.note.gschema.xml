@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="note">
 	<schema id="org.lion_claw.note" path="/org/lion_claw/note/">
-		<key name='height' type='d'><default>800</default></key>
-		<key name='width' type='d'><default>600</default></key>
+		<key name='height' type='u'><default>800</default></key>
+		<key name='width' type='u'><default>600</default></key>
 	</schema>
 </schemalist>
