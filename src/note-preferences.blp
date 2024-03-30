@@ -12,7 +12,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 			title: "列表内容";
 			Adw.ActionRow{
 				title: "标题显示字数";
-				Gtk.SpinButton{
+				Gtk.SpinButton title_num{
 					digits: 0;
 					numeric: true;
 					// value:10;
@@ -30,7 +30,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 			}
 			Adw.ActionRow{
 				title: "副标题显示字数";
-				Gtk.SpinButton{
+				Gtk.SpinButton subtitle_num{
 					digits: 0;
 					numeric: true;
 					// value:10;
@@ -46,7 +46,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 					// width-request: 128;
 				}
 			}
-			Adw.ActionRow{
+			Adw.ActionRow subtitle_line{
 				title: "副标题显示行数";
 				Gtk.Scale{
 					fill-level: 10;
@@ -69,31 +69,31 @@ template$NotePreferences: Adw.PreferencesWindow{
 		Adw.PreferencesGroup{
 			description: "程序界面外观设定";
 			title: "程序";
-			Adw.ExpanderRow use_custom_font_row{
+			Adw.ExpanderRow custom_font_row{
 				title: "自定义字体";
 				enable-expansion: true;
-				expanded: bind use_custom_font.active;
+				expanded: bind custom_font.active;
 				[action]
-				Gtk.Switch use_custom_font{
-					active: bind use_custom_font_row.expanded;
+				Gtk.Switch custom_font{
+					active: bind custom_font_row.expanded;
 					halign: end;
 					valign: center;
 				}
 				Adw.ActionRow{
 					title: "程序边框字体";
-					Gtk.FontDialogButton{
+					Gtk.FontDialogButton custom_font_border{
 						// hexpand: true;
 					}
 				}
 				Adw.ActionRow{
 					title: "列表标题字体";
-					Gtk.FontDialogButton{
+					Gtk.FontDialogButton custom_font_title{
 						// hexpand: true;
 					}
 				}
 				Adw.ActionRow{
 					title: "列表副标题字体";
-					Gtk.FontDialogButton{
+					Gtk.FontDialogButton custom_font_subtitle{
 						// hexpand: true;
 					}
 				}
@@ -111,7 +111,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 				}
 				Adw.ActionRow{
 					title: "高度";
-					Gtk.SpinButton{
+					Gtk.SpinButton height{
 						digits: 0;
 						numeric: true;
 						// value:10;
@@ -126,7 +126,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 				}
 				Adw.ActionRow{
 					title: "宽度";
-					Gtk.SpinButton{
+					Gtk.SpinButton width{
 						digits: 0;
 						numeric: true;
 						// value:10;
@@ -148,19 +148,19 @@ template$NotePreferences: Adw.PreferencesWindow{
 		title: "Editor";
 
 		Adw.PreferencesGroup{
-			Adw.ExpanderRow editor_use_custom_font{
+			Adw.ExpanderRow editor_custom_font{
 				title: "自定义字体";
 				enable-expansion: true;
-				expanded: bind editor_use_custom_font_show.active;
+				expanded: bind editor_custom_font_show.active;
 				[action]
-				Gtk.Switch editor_use_custom_font_show{
-					active: bind editor_use_custom_font.expanded;
+				Gtk.Switch editor_custom_font_show{
+					active: bind editor_custom_font.expanded;
 					halign: end;
 					valign: center;
 				}
 				Adw.ActionRow{
 					title: "编辑器字体";
-					Gtk.FontDialogButton{
+					Gtk.FontDialogButton editor_font{
 					}
 				}
 			}
@@ -236,7 +236,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 
 		Adw.PreferencesGroup{
 			title: "内容本地保存";
-			Adw.EntryRow {
+			Adw.EntryRow save_path{
 				title: "保存路径";
 				use-underline: true;
 				show-apply-button: true;

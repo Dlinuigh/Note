@@ -30,7 +30,6 @@ main (int   argc,
 {
     g_autoptr(NoteApplication) app = NULL;
     int ret;
-    GSettings *settings = g_settings_new("org.lion_claw.note");
     bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);

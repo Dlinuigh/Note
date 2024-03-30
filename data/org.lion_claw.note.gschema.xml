@@ -3,5 +3,8 @@
 	<schema id="org.lion_claw.note" path="/org/lion_claw/note/">
 		<key name='height' type='u'><default>800</default></key>
 		<key name='width' type='u'><default>600</default></key>
+		<key name='title-num' type='u'><default>10</default></key>
+		<key name='subtitle-num' type='u'><default>30</default></key>
+		<key name='subtitle-line' type='u'><default>2</default></key>
 	</schema>
 </schemalist>

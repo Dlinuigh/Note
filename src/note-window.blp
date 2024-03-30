@@ -4,10 +4,7 @@ using Adw 1;
 template $NoteWindow : Adw.ApplicationWindow {
   content:   Adw.ToolbarView {
     content:     Adw.TabView page {
-    }
-
-    ;
-
+    };
     [top]
     Adw.HeaderBar header_bar {
       [start]
@@ -24,17 +21,12 @@ template $NoteWindow : Adw.ApplicationWindow {
         menu-model: menu;
         tooltip-text: _("Menu");
       }
-
       [end]
       Button {
         icon-name: "preferences-system-symbolic";
       }
     }
-  }
-
-  ;
-  default-height: 300;
-  default-width: 600;
+  };
 }
 
 menu menu {

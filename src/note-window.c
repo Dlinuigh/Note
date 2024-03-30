@@ -26,7 +26,7 @@
 struct _NoteWindow
 {
 	AdwApplicationWindow parent_instance;
-
+	GSettings* settings;
 	AdwHeaderBar *header_bar;
 	AdwTabView *page;
 	GtkButton *btn;
@@ -114,6 +114,11 @@ static void json_edit_by_idx(JsonArray* array, guint idx, JsonNode* element_node
 static void note_show(AdwActionRow * note, const char* content, const char* date, gboolean is_exist){
 	//TODO - 该部分将为设置喜好的主题内容，有许多外观选项可以自定义。
 	//TODO - 主标题的字符数量、副标题的字符数量和显示行数。主标题的内容摘要算法。
+	GSettings* settings = g_settings_new("org.lion_claw.note");
+	uint32_t title_num = (uint32_t)g_settings_get_uint64(settings, "title-num");
+	uint32_t subtitle_num = (uint32_t)g_settings_get_uint(settings, "subtitle-num");
+	uint32_t subtitle_line = (uint32_t)g_settings_get_uint(settings, "subtitle-line");
+
 	char title[66];
 	char subtitle[186];
 	int rn = get_real_n_char(content, 10);
@@ -304,6 +309,11 @@ note_window_init(NoteWindow *self)
 	GtkWidget *scroll = gtk_scrolled_window_new();
 	AdwTabPage *list = NULL;
 	gtk_widget_init_template(GTK_WIDGET(self));
+	self->settings=g_settings_new("org.lion_claw.note");
+	GVariant *height = g_settings_get_default_value(self->settings, "height");
+	GVariant *width = g_settings_get_default_value(self->settings, "width");
+	gtk_window_set_default_size(GTK_WINDOW(self), g_variant_get_uint32(width), g_variant_get_uint32(height));
+
 	list = adw_tab_view_append(self->page, scroll);
 	self->list = GTK_LIST_BOX(gtk_list_box_new());
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
