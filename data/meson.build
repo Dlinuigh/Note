@@ -24,8 +24,12 @@ appstreamcli = find_program('appstreamcli', required: false, disabler: true)
 test('Validate appstream file', appstreamcli,
      args: ['validate', '--no-net', '--explain', appstream_file])
 
-install_data('org.lion_claw.note.gschema.xml',
-  install_dir: get_option('datadir') / 'glib-2.0' / 'schemas'
+schemas_dir = join_paths(get_option('datadir') , 'glib-2.0' , 'schemas')
+settings_schemas = 'org.lion_claw.note.gschema.xml'
+
+gnome.compile_schemas(build_by_default:true)
+install_data(settings_schemas ,
+  install_dir: schemas_dir
 )
 
 compile_schemas = find_program('glib-compile-schemas', required: false, disabler: true)

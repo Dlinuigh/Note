@@ -26,7 +26,6 @@ note_sources += gnome.compile_resources('note-resources',
   c_name: 'note',
   dependencies: blueprints,
 )
-
 executable('note', note_sources,
   dependencies: note_deps,
        install: true,

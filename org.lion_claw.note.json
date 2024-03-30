@@ -1,7 +1,7 @@
 {
-    "app-id" : "org.lion_claw.note",
+    "id" : "org.lion_claw.note",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "45",
+    "runtime-version" : "46",
     "sdk" : "org.gnome.Sdk",
     "command" : "note",
     "finish-args" : [

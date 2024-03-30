@@ -29,15 +29,12 @@ main (int   argc,
       char *argv[])
 {
     g_autoptr(NoteApplication) app = NULL;
-    // NoteApplication* app = NULL;
     int ret;
-
+    GSettings *settings = g_settings_new("org.lion_claw.note");
     bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);
-
     app = note_application_new ("org.lion_claw.note", G_APPLICATION_DEFAULT_FLAGS);
     ret = g_application_run (G_APPLICATION (app), argc, argv);
-
     return ret;
 }
