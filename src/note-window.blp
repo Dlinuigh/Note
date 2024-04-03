@@ -4,6 +4,7 @@ using Adw 1;
 template $NoteWindow : Adw.ApplicationWindow {
   content:   Adw.ToolbarView {
     content:     Adw.TabView page {
+      name: "tabview";
     };
     [top]
     Adw.HeaderBar header_bar {
@@ -15,6 +16,10 @@ template $NoteWindow : Adw.ApplicationWindow {
       Button search {
         icon-name: "system-search-symbolic";
       }
+      title-widget: Adw.WindowTitle{
+        name: "header_title";
+        title: "Note";
+      };
       [end]
       MenuButton {
         icon-name: "open-menu-symbolic";

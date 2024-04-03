@@ -4,7 +4,15 @@
 		<key name='height' type='u'><default>800</default></key>
 		<key name='width' type='u'><default>600</default></key>
 		<key name='title-num' type='u'><default>10</default></key>
-		<key name='subtitle-num' type='u'><default>30</default></key>
-		<key name='subtitle-line' type='u'><default>2</default></key>
+		<key name='subtitle-num' type='u'><default>20</default></key>
+		<key name='subtitle-line' type='u'><default>1</default></key>
+		<key name='custom-window-size' type='b'><default>true</default></key>
+		<key name='custom-font' type='b'><default>true</default></key>
+		<key name='custom-editor-font' type='b'><default>true</default></key>
+		<key name='custom-font-border' type='s'><default>'Cantarell Normal Regular 11'</default></key>
+		<key name='custom-font-title' type='s'><default>'Cantarell Normal Regular 11'</default></key>
+		<key name='custom-font-subtitle' type='s'><default>'Cantarell Normal Regular 11'</default></key>
+		<key name='custom-font-editor' type='s'><default>'Cantarell Normal Regular 11'</default></key>
+		<key name='lock-time' type='i'><default>6</default></key>
 	</schema>
 </schemalist>

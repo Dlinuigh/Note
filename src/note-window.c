@@ -26,7 +26,7 @@
 struct _NoteWindow
 {
 	AdwApplicationWindow parent_instance;
-	GSettings* settings;
+	GSettings *settings;
 	AdwHeaderBar *header_bar;
 	AdwTabView *page;
 	GtkButton *btn;
@@ -36,23 +36,23 @@ struct _NoteWindow
 G_DEFINE_FINAL_TYPE(NoteWindow, note_window, ADW_TYPE_APPLICATION_WINDOW)
 
 char *filename;
-JsonParser* parser;
-JsonNode* root;
-JsonArray* dt;
-JsonArray* cont;
-JsonReader* reader;
-JsonGenerator* gen;
+JsonParser *parser;
+JsonNode *root;
+JsonArray *dt;
+JsonArray *cont;
+JsonReader *reader;
+JsonGenerator *gen;
 guint note_idx;
 guint note_len;
-GtkTextTagTable* table=NULL;
+GtkTextTagTable *table = NULL;
 gulong note_new_id;
 gulong note_close_id;
 gulong page_close_id;
 gulong note_edit_to_new_id;
 
-void note_new(NoteWindow*);
-void note_close(NoteWindow*);
-static void page_close(AdwTabView*, AdwTabPage*);
+void note_new(NoteWindow *);
+void note_close(NoteWindow *);
+static void page_close(AdwTabView *, AdwTabPage *);
 
 static void
 note_window_class_init(NoteWindowClass *klass)
@@ -105,95 +105,110 @@ static int get_real_n_char(const char *s, int n)
 	return real_n;
 }
 
-static void json_edit_by_idx(JsonArray* array, guint idx, JsonNode* element_node, gpointer user_data){
-	if(idx==note_idx){
+static void json_edit_by_idx(JsonArray *array, guint idx, JsonNode *element_node, gpointer user_data)
+{
+	if (idx == note_idx)
+	{
 		json_node_set_string(element_node, user_data);
 	}
 }
 
-static void note_show(AdwActionRow * note, const char* content, const char* date, gboolean is_exist){
-	//TODO - 该部分将为设置喜好的主题内容，有许多外观选项可以自定义。
-	//TODO - 主标题的字符数量、副标题的字符数量和显示行数。主标题的内容摘要算法。
-	GSettings* settings = g_settings_new("org.lion_claw.note");
-	uint32_t title_num = (uint32_t)g_settings_get_uint64(settings, "title-num");
-	uint32_t subtitle_num = (uint32_t)g_settings_get_uint(settings, "subtitle-num");
-	uint32_t subtitle_line = (uint32_t)g_settings_get_uint(settings, "subtitle-line");
+static void note_show(AdwActionRow *note, const char *content, const char *date, gboolean is_exist)
+{
+	// TODO - 该部分将为设置喜好的主题内容，有许多外观选项可以自定义。
+	// TODO - 主标题的内容摘要算法。
+	GSettings *settings = g_settings_new("org.lion_claw.note");
+	uint title_num = g_settings_get_uint(settings, "title-num");
+	uint subtitle_num = g_settings_get_uint(settings, "subtitle-num");
+	uint subtitle_line = g_settings_get_uint(settings, "subtitle-line");
+	int time = g_settings_get_int(settings, "lock-time");
 
 	char title[66];
 	char subtitle[186];
-	int rn = get_real_n_char(content, 10);
+	int rn = get_real_n_char(content, title_num);
 	strncpy(title, content, rn);
 	title[rn] = '\0';
 	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(note), title);
-	rn = get_real_n_char(content, 30);
+	rn = get_real_n_char(content, subtitle_num);
 	strncpy(subtitle, content, rn);
 	subtitle[rn] = '\0';
 	adw_action_row_set_subtitle(note, subtitle);
-	adw_action_row_set_subtitle_lines(note, 2);
-	if(!is_exist){
+	adw_action_row_set_subtitle_lines(note, subtitle_line);
+	GtkWidget *check = gtk_check_button_new();
+	adw_action_row_add_suffix(note, check);
+	gtk_widget_set_visible(check, false);
+	adw_action_row_set_activatable_widget(note, check);
+	if (!is_exist)
+	{
 		GtkWidget *image;
 		GDateTime *datetime = g_date_time_new_from_iso8601(date, NULL);
-		GtkWidget* check = gtk_check_button_new();
-		//TODO - 文件加锁的时间阈值。文件加锁的设置开关。
-		if (g_date_time_difference(g_date_time_new_now_local(), datetime) / G_TIME_SPAN_HOUR > 6)
+		// TODO - 文件加锁的时间阈值。文件加锁的设置开关。
+		if (time != -1)
 		{
-			image = gtk_image_new_from_icon_name("changes-prevent-symbolic");
+			if (g_date_time_difference(g_date_time_new_now_local(), datetime) / G_TIME_SPAN_HOUR > time)
+			{
+				image = gtk_image_new_from_icon_name("changes-prevent-symbolic");
+			}
+			else
+			{
+				image = gtk_image_new_from_icon_name("changes-allow-symbolic");
+			}
+			adw_action_row_add_prefix(note, image);
 		}
 		else
 		{
-			image = gtk_image_new_from_icon_name("changes-allow-symbolic");
+			// TODO - 不用加锁。
 		}
-		adw_action_row_add_suffix(note, check);
-		gtk_widget_set_visible(check, false);
-		adw_action_row_set_activatable_widget(note, check);
-		adw_action_row_add_prefix(note, image);
-		//TODO - 时间的显示格式。可以自定义。
+		// TODO - 时间的显示格式。可以自定义。
 		adw_action_row_add_suffix(note, gtk_label_new(g_date_time_format(datetime, "%F %T")));
 	}
 }
 
-static void note_save_action(GtkButton* save, NoteWindow* self){
+static void note_save_action(GtkButton *save, NoteWindow *self)
+{
 	GtkTextIter start;
 	GtkTextIter end;
-	AdwTabPage* page = adw_tab_view_get_nth_page(self->page, 1);
-	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(page)));
-	const char* date=json_array_get_string_element(dt, note_idx);
-	AdwActionRow* note = ADW_ACTION_ROW(gtk_list_box_get_row_at_index(self->list, note_idx));
-	const char* content = NULL;
+	AdwTabPage *page = adw_tab_view_get_nth_page(self->page, 1);
+	GtkTextBuffer *text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(page)));
+	const char *date = json_array_get_string_element(dt, note_idx);
+	AdwActionRow *note = ADW_ACTION_ROW(gtk_list_box_get_row_at_index(self->list, note_idx));
+	const char *content = NULL;
 	gtk_text_buffer_get_start_iter(text_buffer, &start);
 	gtk_text_buffer_get_end_iter(text_buffer, &end);
 	content = gtk_text_buffer_get_text(text_buffer, &start, &end, false);
 	json_array_foreach_element(cont, json_edit_by_idx, (gpointer)content);
 	note_show(note, content, date, true);
 	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
-	adw_tab_view_close_page(self->page, page);
 	json_generator_to_file(gen, filename, NULL);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
+	adw_tab_view_close_page(self->page, page);
 }
 
-static void note_edit_to_new(GData* user_data){
-	GtkButton* save = g_datalist_get_data(&user_data, "save");
-	NoteWindow* self = g_datalist_get_data(&user_data, "NoteWindow");
-	AdwTabPage* page = adw_tab_view_get_nth_page(self->page, 1);
+static void note_edit_to_new(GData *user_data)
+{
+	GtkButton *save = g_datalist_get_data(&user_data, "save");
+	NoteWindow *self = g_datalist_get_data(&user_data, "NoteWindow");
+	AdwTabPage *page = adw_tab_view_get_nth_page(self->page, 1);
 	adw_header_bar_remove(self->header_bar, GTK_WIDGET(save));
-	adw_tab_view_close_page(self->page, page);
 	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
+	adw_tab_view_close_page(self->page, page);
 	note_new(self);
 }
 
-static void note_edit_action(AdwActionRow* row, NoteWindow* self){
-	GtkTextBuffer* buffer = NULL;
-	GtkWidget* text = NULL;
-	GtkButton* btn = GTK_BUTTON(gtk_button_new());
+static void note_edit_action(AdwActionRow *row, NoteWindow *self)
+{
+	GtkTextBuffer *buffer = NULL;
+	GtkWidget *text = NULL;
+	GtkButton *btn = GTK_BUTTON(gtk_button_new());
 	AdwTabPage *edit = NULL;
-	GData* dl;
-	const char* content = NULL;
+	GData *dl;
+	const char *content = NULL;
 	note_idx = gtk_list_box_row_get_index(GTK_LIST_BOX_ROW(row));
 	content = json_array_get_string_element(cont, note_idx);
 	buffer = gtk_text_buffer_new(table);
@@ -211,9 +226,9 @@ static void note_edit_action(AdwActionRow* row, NoteWindow* self){
 	note_edit_to_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_edit_to_new), dl);
 }
 
-static void list_add(NoteWindow* self, const char *content, const char *date, int idx)
+static void list_add(NoteWindow *self, const char *content, const char *date, int idx)
 {
-	AdwActionRow* note = ADW_ACTION_ROW( adw_action_row_new());
+	AdwActionRow *note = ADW_ACTION_ROW(adw_action_row_new());
 	note_show(note, content, date, false);
 	gtk_list_box_append(GTK_LIST_BOX(self->list), GTK_WIDGET(note));
 	g_signal_connect(note, "activated", G_CALLBACK(note_edit_action), self);
@@ -225,20 +240,24 @@ static void window_refresh(NoteWindow *self, int num)
 	{
 		const char *date = json_array_get_string_element(dt, i);
 		const char *content = json_array_get_string_element(cont, i);
-		if(content==NULL){
+		if (content == NULL)
+		{
 			list_add(self, "", date, i);
-		}else{
+		}
+		else
+		{
 			list_add(self, content, date, i);
 		}
 	}
 }
 
-static void json_init(void){
-	GFile* file=NULL;
-	JsonObject* root_obj=NULL;
-	JsonNode* dt_node=NULL;
-	JsonNode* cont_node=NULL;
-	//TODO - 文件的保存地址将设置为可改变。并且假设大量的文件条目那么将文件进行分隔将会节省时间。
+static void json_init(void)
+{
+	GFile *file = NULL;
+	JsonObject *root_obj = NULL;
+	JsonNode *dt_node = NULL;
+	JsonNode *cont_node = NULL;
+	// TODO - 文件的保存地址将设置为可改变。并且假设大量的文件条目那么将文件进行分隔将会节省时间。
 	filename = g_strconcat(g_get_home_dir(), "/.local/share/Note/data.json", NULL);
 	file = g_file_new_for_path(filename);
 	if (g_file_query_exists(file, NULL) != true)
@@ -267,18 +286,19 @@ static void json_add(const char *content, const char *date)
 	json_generator_to_file(gen, filename, NULL);
 }
 
-static void page_close(AdwTabView* view, AdwTabPage* page){
+static void page_close(AdwTabView *view, AdwTabPage *page)
+{
 	adw_tab_view_close_page_finish(view, page, true);
 }
 
-void note_close(NoteWindow* self)
+void note_close(NoteWindow *self)
 {
 	AdwTabPage *add = adw_tab_view_get_nth_page(self->page, 1);
-	GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(add)));
+	GtkTextBuffer *text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(adw_tab_page_get_child(add)));
 	GtkTextIter start;
 	GtkTextIter end;
-	char* content=NULL;
-	const char* date=NULL;
+	char *content = NULL;
+	const char *date = NULL;
 	gtk_text_buffer_get_start_iter(text_buffer, &start);
 	gtk_text_buffer_get_end_iter(text_buffer, &end);
 	content = gtk_text_buffer_get_text(text_buffer, &start, &end, false);
@@ -286,17 +306,32 @@ void note_close(NoteWindow* self)
 	json_add(content, date);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	list_add(self, content, date, note_len);
-	adw_tab_view_close_page(self->page, add);
 	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
 	g_signal_handler_disconnect(self->btn, note_close_id);
 	g_signal_handler_disconnect(self->page, page_close_id);
 	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), add);
+	adw_tab_view_close_page(self->page, add);
 }
 
-void note_new(NoteWindow* self)
+void note_new(NoteWindow *self)
 {
-	GtkTextBuffer* buffer = gtk_text_buffer_new(table);
-	AdwTabPage *add = adw_tab_view_append(self->page, GTK_WIDGET(gtk_text_view_new_with_buffer(buffer)));
+	PangoFontDescription* desc=NULL;
+	GString* css = NULL;
+	GtkCssProvider* provider=NULL;
+	gboolean if_editor_c = g_settings_get_boolean(self->settings, "custom-editor-font");
+	GtkTextBuffer *buffer = gtk_text_buffer_new(table);
+	GtkWidget* view = gtk_text_view_new_with_buffer(buffer);
+	AdwTabPage *add = adw_tab_view_append(self->page, view);
+	if(if_editor_c){
+		desc = pango_font_description_from_string(g_settings_get_string(self->settings, "custom-font-editor"));
+		css = g_string_new("#tabview .view{font-family:'");
+		g_string_append(css, pango_font_description_get_family(desc));
+		g_string_append(css, "';font-size:");
+		g_string_append_printf(css, "%dpt;}", pango_font_description_get_size(desc)/PANGO_SCALE);
+		provider = gtk_css_provider_new();
+		gtk_css_provider_load_from_string(provider, css->str);
+		gtk_style_context_add_provider_for_display(gtk_widget_get_display(view), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+	}
 	adw_tab_view_set_selected_page(self->page, add);
 	gtk_button_set_icon_name(self->btn, "go-previous-symbolic");
 	g_signal_handler_disconnect(self->btn, note_new_id);
@@ -308,12 +343,36 @@ note_window_init(NoteWindow *self)
 {
 	GtkWidget *scroll = gtk_scrolled_window_new();
 	AdwTabPage *list = NULL;
+	PangoFontDescription* desc=NULL;
+	GString* css = NULL;
+	GtkCssProvider* provider=NULL;
 	gtk_widget_init_template(GTK_WIDGET(self));
-	self->settings=g_settings_new("org.lion_claw.note");
-	GVariant *height = g_settings_get_default_value(self->settings, "height");
-	GVariant *width = g_settings_get_default_value(self->settings, "width");
-	gtk_window_set_default_size(GTK_WINDOW(self), g_variant_get_uint32(width), g_variant_get_uint32(height));
 
+	self->settings = g_settings_new("org.lion_claw.note");
+	gtk_window_set_default_size(GTK_WINDOW(self), g_settings_get_uint(self->settings, "width"), g_settings_get_uint(self->settings, "height"));
+	gboolean if_list_c = g_settings_get_boolean(self->settings, "custom-font");
+	if(if_list_c){
+		desc = pango_font_description_from_string(g_settings_get_string(self->settings, "custom-font-title"));
+		css = g_string_new("#tabview .title{font-family:'");
+		g_string_append(css, pango_font_description_get_family(desc));
+		g_string_append(css, "';font-size:");
+		g_string_append_printf(css, "%dpt;}", pango_font_description_get_size(desc)/PANGO_SCALE);
+
+		desc = pango_font_description_from_string(g_settings_get_string(self->settings, "custom-font-subtitle"));
+		g_string_append(css, "#tabview .subtitle{font-family:'");
+		g_string_append(css, pango_font_description_get_family(desc));
+		g_string_append(css, "';font-size:");
+		g_string_append_printf(css, "%dpt;}", pango_font_description_get_size(desc)/PANGO_SCALE);
+
+		desc = pango_font_description_from_string(g_settings_get_string(self->settings, "custom-font-border"));
+		g_string_append(css, ":not(#tabview){font-family:'");
+		g_string_append(css, pango_font_description_get_family(desc));
+		g_string_append(css, "';font-size:");
+		g_string_append_printf(css, "%dpt;}", pango_font_description_get_size(desc)/PANGO_SCALE);
+		provider = gtk_css_provider_new();
+		gtk_css_provider_load_from_string(provider, css->str);
+		gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(self)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+	}
 	list = adw_tab_view_append(self->page, scroll);
 	self->list = GTK_LIST_BOX(gtk_list_box_new());
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
