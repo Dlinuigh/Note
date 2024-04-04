@@ -14,5 +14,6 @@
 		<key name='custom-font-subtitle' type='s'><default>'Cantarell Normal Regular 11'</default></key>
 		<key name='custom-font-editor' type='s'><default>'Cantarell Normal Regular 11'</default></key>
 		<key name='lock-time' type='i'><default>6</default></key>
+		<key name='save-path' type='s'><default>"~/.local/share/Note/data.json"</default></key>
 	</schema>
 </schemalist>

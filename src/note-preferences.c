@@ -26,6 +26,7 @@ struct _NotePreferences
 	GtkFontDialogButton *custom_font_editor;
 	AdwEntryRow *save_path;
 	GtkAdjustment *lock_time;
+	GtkButton* file_choose;
 };
 
 G_DEFINE_FINAL_TYPE(NotePreferences, note_preferences, ADW_TYPE_PREFERENCES_WINDOW)
@@ -54,6 +55,7 @@ note_preferences_class_init(NotePreferencesClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, NotePreferences, custom_font_editor);
 	gtk_widget_class_bind_template_child(widget_class, NotePreferences, save_path);
 	gtk_widget_class_bind_template_child(widget_class, NotePreferences, lock_time);
+	gtk_widget_class_bind_template_child(widget_class, NotePreferences, file_choose);
 }
 
 static void note_preferences_close(NotePreferences *self){
@@ -70,8 +72,22 @@ static void note_preferences_close(NotePreferences *self){
 	g_settings_set_string(self->settings, "custom-font-subtitle", pango_font_description_to_string(gtk_font_dialog_button_get_font_desc(self->custom_font_subtitle)));
 	g_settings_set_string(self->settings, "custom-font-editor", pango_font_description_to_string(gtk_font_dialog_button_get_font_desc(self->custom_font_editor)));
 	g_settings_set_int(self->settings, "lock-time", (int)gtk_adjustment_get_value(self->lock_time));
+	g_settings_set_string(self->settings, "save-path", adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->save_path)));
 	//TODO - fontdiagbutton 因为只能显示字体和大小，所以即便fontdiag能够设置weight和language之类的信息也不会到fontdiagbutton,只能说适合高级设置。
 	gtk_window_close(GTK_WINDOW(self));
+}
+
+static void open_finish(GObject* dialog, GAsyncResult* res, gpointer user_data){
+	GFile* file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(dialog), res, NULL);
+	NotePreferences *self = NOTE_PREFERENCES(user_data);
+	char* path = g_file_get_path(file);
+	//TODO - 如果使用者选择了多文件保存那么这个路径就应该是一个目录，而不是文件。
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->save_path), path);
+}
+
+static void save_choose(GtkButton* btn, NotePreferences* self){
+	GtkFileDialog* dialog = gtk_file_dialog_new();
+	gtk_file_dialog_open(dialog, GTK_WINDOW(self), NULL, open_finish, self);
 }
 
 static void
@@ -96,5 +112,7 @@ note_preferences_init(NotePreferences *self)
 	gtk_font_dialog_button_set_dialog(self->custom_font_subtitle, gtk_font_dialog_new());
 	gtk_font_dialog_button_set_dialog(self->custom_font_editor, gtk_font_dialog_new());
 	gtk_adjustment_set_value(self->lock_time, g_settings_get_int(self->settings, "lock-time"));
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->save_path), g_settings_get_string(self->settings, "save-path"));
 	g_signal_connect(self, "close-request", G_CALLBACK(note_preferences_close), NULL);
+	g_signal_connect(self->file_choose, "clicked", G_CALLBACK(save_choose), self);
 }

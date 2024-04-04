@@ -143,6 +143,7 @@ static void note_show(AdwActionRow *note, const char *content, const char *date,
 		GtkWidget *image;
 		GDateTime *datetime = g_date_time_new_from_iso8601(date, NULL);
 		// TODO - 文件加锁的时间阈值。文件加锁的设置开关。
+		//TODO - 文件加锁的更新机制，因为代码是在加载的时候进行判定，而打开了就将保持，也就意味着，不更新。
 		if (time != -1)
 		{
 			if (g_date_time_difference(g_date_time_new_now_local(), datetime) / G_TIME_SPAN_HOUR > time)
@@ -201,6 +202,19 @@ static void note_edit_to_new(GData *user_data)
 	note_new(self);
 }
 
+static void note_close_action(GtkButton* close, NoteWindow* self){
+	AdwWindowTitle* title = ADW_WINDOW_TITLE(adw_header_bar_get_title_widget(self->header_bar));
+	adw_window_title_set_subtitle(title, NULL);
+	AdwTabPage *page = adw_tab_view_get_nth_page(self->page, 1);
+	adw_header_bar_remove(self->header_bar, GTK_WIDGET(close));
+	g_signal_handler_disconnect(self->btn, note_edit_to_new_id);
+	note_new_id = g_signal_connect_swapped(self->btn, "clicked", G_CALLBACK(note_new), self);
+	g_signal_handler_disconnect(self->page, page_close_id);
+	page_close_id = g_signal_connect(self->page, "close-page", G_CALLBACK(page_close), page);
+	adw_tab_view_close_page(self->page, page);
+	//FIXME - Adwaita-CRITICAL **: 11:03:35.567: adw_tab_view_close_page_finish: assertion 'page_belongs_to_this_view (self, page)' failed 每次关闭页面都有这个报错，目前却不影响功能。按理说各种信息应该是正确的。
+}
+
 static void note_edit_action(AdwActionRow *row, NoteWindow *self)
 {
 	GtkTextBuffer *buffer = NULL;
@@ -208,17 +222,31 @@ static void note_edit_action(AdwActionRow *row, NoteWindow *self)
 	GtkButton *btn = GTK_BUTTON(gtk_button_new());
 	AdwTabPage *edit = NULL;
 	GData *dl;
+	GDateTime* datetime=NULL;
+	int time = g_settings_get_int(self->settings, "lock-time");
 	const char *content = NULL;
 	note_idx = gtk_list_box_row_get_index(GTK_LIST_BOX_ROW(row));
 	content = json_array_get_string_element(cont, note_idx);
+	datetime = g_date_time_new_from_iso8601(json_array_get_string_element(dt, note_idx),NULL);
 	buffer = gtk_text_buffer_new(table);
 	text = gtk_text_view_new_with_buffer(buffer);
 	edit = adw_tab_view_append(self->page, text);
+	//TODO - actionrow把问题搞得复杂了，他可以添加suffix但是无法直接获得。那先这样，将编辑时间视为新的现在时间。
+	if (g_date_time_difference(g_date_time_new_now_local(), datetime) / G_TIME_SPAN_HOUR > time){
+		gtk_text_view_set_editable(GTK_TEXT_VIEW(text), false);
+		AdwWindowTitle* title = ADW_WINDOW_TITLE(adw_header_bar_get_title_widget(self->header_bar));
+		adw_window_title_set_subtitle(title, "Read Only");
+		//TODO - if read only then save meaningless.
+		gtk_button_set_icon_name(btn, "go-previous-symbolic");
+		g_signal_connect(btn, "clicked", G_CALLBACK(note_close_action), self);
+	}else{
+		gtk_button_set_icon_name(btn, "document-save-symbolic");
+		g_signal_connect(btn, "clicked", G_CALLBACK(note_save_action), self);
+	}
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(text), true);
 	gtk_text_buffer_set_text(buffer, content, -1);
-	gtk_button_set_icon_name(btn, "document-save-symbolic");
 	adw_header_bar_pack_start(self->header_bar, GTK_WIDGET(btn));
 	adw_tab_view_set_selected_page(self->page, edit);
-	g_signal_connect(btn, "clicked", G_CALLBACK(note_save_action), self);
 	g_datalist_init(&dl);
 	g_datalist_set_data(&dl, "NoteWindow", self);
 	g_datalist_set_data(&dl, "save", btn);
@@ -251,14 +279,16 @@ static void window_refresh(NoteWindow *self, int num)
 	}
 }
 
-static void json_init(void)
+static void json_init(NoteWindow* self)
 {
 	GFile *file = NULL;
 	JsonObject *root_obj = NULL;
 	JsonNode *dt_node = NULL;
 	JsonNode *cont_node = NULL;
 	// TODO - 文件的保存地址将设置为可改变。并且假设大量的文件条目那么将文件进行分隔将会节省时间。
-	filename = g_strconcat(g_get_home_dir(), "/.local/share/Note/data.json", NULL);
+	filename = g_settings_get_string(self->settings, "save-path");
+	//TODO - 调试的时候用的是flatpak环境，此时使用绝对路径导致找不到文件，这是正常现象，因为flatpak会将其挂载到/run/目录下。
+	// filename = g_strconcat(g_get_home_dir(), path, NULL); //FIXME - 至于这里为什么能对，是因为使用了通用的g_get_home_dir获取home路径。
 	file = g_file_new_for_path(filename);
 	if (g_file_query_exists(file, NULL) != true)
 		g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
@@ -377,7 +407,7 @@ note_window_init(NoteWindow *self)
 	self->list = GTK_LIST_BOX(gtk_list_box_new());
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), GTK_WIDGET(self->list));
 	gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(scroll), true);
-	json_init();
+	json_init(self);
 	window_refresh(self, note_len);
 	gtk_button_set_icon_name(self->btn, "list-add-symbolic");
 	adw_tab_view_set_selected_page(self->page, list);
