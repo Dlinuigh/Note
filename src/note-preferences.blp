@@ -186,17 +186,17 @@ template$NotePreferences: Adw.PreferencesWindow{
 				Gtk.StackPage{
 					title: "WebDav";
 					child: Gtk.ListBox{
-						Adw.EntryRow{title: "账号";}
-						Adw.EntryRow{title: "密码";}
-						Adw.EntryRow{title: "地址";}
-						Gtk.Button{label: "测试";}
+						Adw.EntryRow webdav_account{title: "账号";}
+						Adw.PasswordEntryRow webdav_password{title: "密码";}
+						Adw.EntryRow webdav_addr{title: "地址";}
+						Gtk.Button webdav_test{label: "测试";}
 					};
 				}
 				Gtk.StackPage{
 					title: "NextCloud";
 					child: Gtk.ListBox{
 						Adw.EntryRow{title: "账号";}
-						Adw.EntryRow{title: "密码";}
+						Adw.PasswordEntryRow{title: "密码";}
 						Adw.EntryRow{title: "地址";}
 						Gtk.Button{label: "测试";}
 					};

@@ -27,6 +27,10 @@ struct _NotePreferences
 	AdwEntryRow *save_path;
 	GtkAdjustment *lock_time;
 	GtkButton* file_choose;
+	GtkButton* webdav_test;
+	AdwEntryRow* webdav_account;
+	AdwPasswordEntryRow* webdav_password;
+	AdwEntryRow* webdav_addr;
 };
 
 G_DEFINE_FINAL_TYPE(NotePreferences, note_preferences, ADW_TYPE_PREFERENCES_WINDOW)
@@ -56,6 +60,10 @@ note_preferences_class_init(NotePreferencesClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, NotePreferences, save_path);
 	gtk_widget_class_bind_template_child(widget_class, NotePreferences, lock_time);
 	gtk_widget_class_bind_template_child(widget_class, NotePreferences, file_choose);
+	gtk_widget_class_bind_template_child(widget_class, NotePreferences, webdav_test);
+	gtk_widget_class_bind_template_child(widget_class, NotePreferences, webdav_account);
+	gtk_widget_class_bind_template_child(widget_class, NotePreferences, webdav_password);
+	gtk_widget_class_bind_template_child(widget_class, NotePreferences, webdav_addr);
 }
 
 static void note_preferences_close(NotePreferences *self){
@@ -90,6 +98,21 @@ static void save_choose(GtkButton* btn, NotePreferences* self){
 	gtk_file_dialog_open(dialog, GTK_WINDOW(self), NULL, open_finish, self);
 }
 
+static void sync_webdav_test(GtkButton* btn, NotePreferences* self){
+	char* account = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_account));
+	char* password = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_password));
+	char* addr = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_addr));
+	GSocket* socket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM,G_SOCKET_PROTOCOL_TCP, NULL);
+	GSocketAddress* address = g_socket_address_new_from_native(addr,0);
+	// GSocketAddress* address = g_list_nth (g_resolver_lookup_by_name (), 0);
+	//FIXME - 不知道为什么无法获得填写的信息。gtk_accessible_text_get_contents: assertion 'end >= start' failed错误。
+	printf("%s", addr);
+	printf("%s", account);
+	printf("%s", password);
+	g_assert(G_IS_SOCKET_ADDRESS(address));
+	g_socket_connect (socket, address, NULL, NULL);
+}
+
 static void
 note_preferences_init(NotePreferences *self)
 {
@@ -113,6 +136,7 @@ note_preferences_init(NotePreferences *self)
 	gtk_font_dialog_button_set_dialog(self->custom_font_editor, gtk_font_dialog_new());
 	gtk_adjustment_set_value(self->lock_time, g_settings_get_int(self->settings, "lock-time"));
 	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->save_path), g_settings_get_string(self->settings, "save-path"));
+	g_signal_connect(self->webdav_test, "clicked", G_CALLBACK(sync_webdav_test), self);
 	g_signal_connect(self, "close-request", G_CALLBACK(note_preferences_close), NULL);
 	g_signal_connect(self->file_choose, "clicked", G_CALLBACK(save_choose), self);
 }
