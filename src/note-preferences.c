@@ -1,4 +1,4 @@
-#include "config.h"
+#include "config.h" // IWYU pragma: export
 
 #include "note-preferences.h"
 
@@ -99,15 +99,16 @@ static void save_choose(GtkButton* btn, NotePreferences* self){
 }
 
 static void sync_webdav_test(GtkButton* btn, NotePreferences* self){
-	char* account = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_account));
-	char* password = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_password));
-	char* addr = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_addr));
 	// GSocketAddress* address = g_list_nth (g_resolver_lookup_by_name (), 0);
 	//FIXME - 不知道为什么无法获得填写的信息。gtk_accessible_text_get_contents: assertion 'end >= start' failed错误。
 	//TODO - webdav可以用gfile uri获得。
-	g_print("%s", addr);
-	g_print("%s", account);
-	g_print("%s", password);
+	const char* account = gtk_editable_get_text(GTK_EDITABLE(self->webdav_account));
+	const char* addr = gtk_editable_get_text(GTK_EDITABLE(self->webdav_addr));
+	const char* passwd = gtk_editable_get_text(GTK_EDITABLE(self->webdav_password));
+	GUri* uri = g_uri_parse(addr, G_URI_FLAGS_NONE,		 NULL);
+	g_settings_set_string(self->settings, "webdav-account", adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_account)));
+	g_settings_set_string(self->settings, "webdav-addr", adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_addr)));
+	g_settings_set_string(self->settings, "webdav-passwd", adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_password)));
 }
 
 static void
@@ -133,6 +134,9 @@ note_preferences_init(NotePreferences *self)
 	gtk_font_dialog_button_set_dialog(self->custom_font_editor, gtk_font_dialog_new());
 	gtk_adjustment_set_value(self->lock_time, g_settings_get_int(self->settings, "lock-time"));
 	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->save_path), g_settings_get_string(self->settings, "save-path"));
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->webdav_account), g_settings_get_string(self->settings, "webdav-account"));
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->webdav_addr), g_settings_get_string(self->settings, "webdav-addr"));
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(self->webdav_password), g_settings_get_string(self->settings, "webdav-passwd"));
 	g_signal_connect(self->webdav_test, "clicked", G_CALLBACK(sync_webdav_test), self);
 	g_signal_connect(self, "close-request", G_CALLBACK(note_preferences_close), NULL);
 	g_signal_connect(self->file_choose, "clicked", G_CALLBACK(save_choose), self);

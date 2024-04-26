@@ -15,5 +15,8 @@
 		<key name='custom-font-editor' type='s'><default>'Cantarell Normal Regular 11'</default></key>
 		<key name='lock-time' type='i'><default>6</default></key>
 		<key name='save-path' type='s'><default>"~/.local/share/Note/data.json"</default></key>
+		<key name='webdav-account' type='s'><default>"qwert@gmail.com"</default></key>
+		<key name='webdav-addr'><default>https://dav.com</default></key>
+		<key name='webdav-passwd'><default>123456</default></key>
 	</schema>
 </schemalist>

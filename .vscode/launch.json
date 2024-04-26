@@ -9,7 +9,7 @@
       "stopAtEntry": false,
       "externalConsole": false,
       "cwd": "/home/lion/Projects/Note/src",
-      "program": "/home/lion/Projects/Note/build/src/note",
+      "program": "/home/lion/Projects/Note/_build/src/note",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
