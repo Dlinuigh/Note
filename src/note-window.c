@@ -23,6 +23,7 @@
 #include <glib-object.h>  
 #include <json-glib/json-glib.h>
 #include <json-glib/json-gobject.h>
+#include <string.h>
 struct _NoteWindow
 {
 	AdwApplicationWindow parent_instance;
@@ -279,6 +280,10 @@ static void window_refresh(NoteWindow *self, int num)
 	}
 }
 
+void create_empty_json(GFile* file){
+	g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
+}
+
 static void json_init(NoteWindow* self)
 {
 	GFile *file = NULL;
@@ -286,21 +291,30 @@ static void json_init(NoteWindow* self)
 	JsonNode *dt_node = NULL;
 	JsonNode *cont_node = NULL;
 	// TODO - 文件的保存地址将设置为可改变。并且假设大量的文件条目那么将文件进行分隔将会节省时间。
-	filename = g_settings_get_string(self->settings, "save-path");
+	char* path = g_settings_get_string(self->settings, "save-path");
 	//TODO - 调试的时候用的是flatpak环境，此时使用绝对路径导致找不到文件，这是正常现象，因为flatpak会将其挂载到/run/目录下。
 	// filename = g_strconcat(g_get_home_dir(), path, NULL); //FIXME - 至于这里为什么能对，是因为使用了通用的g_get_home_dir获取home路径。
+	GFile* dir = g_file_new_for_path(path);
+	filename = g_strconcat(path, "/data.json", NULL);
 	file = g_file_new_for_path(filename);
-	if (g_file_query_exists(file, NULL) != true)
-		g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
+	if (g_file_query_exists(dir, NULL) == true){
+		if(!g_file_query_exists(file, NULL)){
+			create_empty_json(file);
+		}
+	}else{
+		g_file_make_directory_with_parents(dir, NULL, NULL);
+		create_empty_json(file);
+	}
+	
 	g_object_unref(file);
 	parser = json_parser_new();
 	json_parser_load_from_file(parser, filename, NULL);
 	reader = json_reader_new(json_parser_get_root(parser));
+	root = json_parser_get_root(parser);
+	root_obj = json_node_dup_object(root);
 	json_reader_read_member(reader, "timestamp");
 	note_len = json_reader_count_elements(reader);
 	g_object_unref(reader);
-	root = json_parser_get_root(parser);
-	root_obj = json_node_dup_object(root);
 	dt_node = json_object_get_member(root_obj, "timestamp");
 	dt = json_node_get_array(dt_node);
 	cont_node = json_object_get_member(root_obj, "content");
@@ -402,6 +416,11 @@ note_window_init(NoteWindow *self)
 		provider = gtk_css_provider_new();
 		gtk_css_provider_load_from_string(provider, css->str);
 		gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(self)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+	}
+	char* path = g_strconcat(g_get_user_config_dir(), "/Note", NULL);
+	char* p = g_settings_get_string(self->settings, "save-path");
+	if(strlen(p)<5){
+		g_settings_set_string(self->settings, "save-path", path);
 	}
 	list = adw_tab_view_append(self->page, scroll);
 	self->list = GTK_LIST_BOX(gtk_list_box_new());

@@ -1,54 +1,62 @@
 using Gtk 4.0;
 using Adw 1;
 
-template$NotePreferences: Adw.PreferencesWindow{
-	Adw.PreferencesPage apperence{
+template $NotePreferences: Adw.PreferencesWindow {
+	Adw.PreferencesPage apperence {
 		description: "定义程序外观";
 		icon-name: "preferences-desktop-appearance-symbolic";
 		title: "Apperence";
 
-		Adw.PreferencesGroup{
+		Adw.PreferencesGroup {
 			description: "列表内容显示设定";
 			title: "列表内容";
-			Adw.ActionRow{
+
+			Adw.ActionRow {
 				title: "标题显示字数";
-				Gtk.SpinButton{
+
+				Gtk.SpinButton {
 					digits: 0;
 					numeric: true;
 					// value:10;
-					adjustment: Gtk.Adjustment title_num{
+					adjustment: Gtk.Adjustment title_num {
 						upper: 20;
 						lower: 1;
 						step-increment: 1;
 						value: 10;
 					};
+
 					climb-rate: 10;
 					// margin-start: 32;
 					// hexpand: true;
 					// width-request: 128;
 				}
 			}
-			Adw.ActionRow{
+
+			Adw.ActionRow {
 				title: "副标题显示字数";
-				Gtk.SpinButton{
+
+				Gtk.SpinButton {
 					digits: 0;
 					numeric: true;
 					// value:10;
-					adjustment: Gtk.Adjustment subtitle_num{
+					adjustment: Gtk.Adjustment subtitle_num {
 						upper: 50;
 						lower: 1;
 						step-increment: 1;
 						value: 30;
 					};
+
 					climb-rate: 10;
 					// margin-start: 32;
 					// hexpand: true;
 					// width-request: 128;
 				}
 			}
-			Adw.ActionRow{
+
+			Adw.ActionRow {
 				title: "副标题显示行数";
-				Gtk.Scale{
+
+				Gtk.Scale {
 					fill-level: 10;
 					draw-value: true;
 					digits: 0;
@@ -57,7 +65,8 @@ template$NotePreferences: Adw.PreferencesWindow{
 					round-digits: 0;
 					restrict-to-fill-level: true;
 					show-fill-level: true;
-					adjustment: Gtk.Adjustment subtitle_line{
+
+					adjustment: Gtk.Adjustment subtitle_line {
 						upper: 3;
 						lower: 0;
 						step-increment: 1;
@@ -66,76 +75,93 @@ template$NotePreferences: Adw.PreferencesWindow{
 				}
 			}
 		}
-		Adw.PreferencesGroup{
+
+		Adw.PreferencesGroup {
 			description: "程序界面外观设定";
 			title: "程序";
-			Adw.ExpanderRow custom_font_row{
+
+			Adw.ExpanderRow custom_font_row {
 				title: "自定义字体";
 				enable-expansion: true;
 				expanded: bind custom_font.active;
+
 				[action]
-				Gtk.Switch custom_font{
+				Gtk.Switch custom_font {
 					active: bind custom_font_row.expanded;
 					halign: end;
 					valign: center;
 				}
-				Adw.ActionRow{
+
+				Adw.ActionRow {
 					title: "程序边框字体";
-					Gtk.FontDialogButton custom_font_border{
+
+					Gtk.FontDialogButton custom_font_border {
 						// hexpand: true;
 					}
 				}
-				Adw.ActionRow{
+
+				Adw.ActionRow {
 					title: "列表标题字体";
-					Gtk.FontDialogButton custom_font_title{
+
+					Gtk.FontDialogButton custom_font_title {
 						// hexpand: true;
 					}
 				}
-				Adw.ActionRow{
+
+				Adw.ActionRow {
 					title: "列表副标题字体";
-					Gtk.FontDialogButton custom_font_subtitle{
+
+					Gtk.FontDialogButton custom_font_subtitle {
 						// hexpand: true;
 					}
 				}
 			}
-			Adw.ExpanderRow custom_ws{
+
+			Adw.ExpanderRow custom_ws {
 				title: "自定义窗口大小";
 				tooltip-text: "每一次打开程序都会优先显示的大小，倘若经过外部原因改变窗口大小，如果没有自定义，则会保存为当前与下一次的窗口默认值，外部原因包括快捷键、拖放。";
 				enable-expansion: true;
 				expanded: bind custom_window_size.active;
+
 				[action]
-				Gtk.Switch custom_window_size{
+				Gtk.Switch custom_window_size {
 					active: bind custom_ws.expanded;
 					halign: end;
 					valign: center;
 				}
-				Adw.ActionRow{
+
+				Adw.ActionRow {
 					title: "高度";
-					Gtk.SpinButton{
+
+					Gtk.SpinButton {
 						digits: 0;
 						numeric: true;
 						// value:10;
-						adjustment: Gtk.Adjustment height{
+						adjustment: Gtk.Adjustment height {
 							upper: 1600;
 							lower: 1;
 							step-increment: 1;
 							value: 300;
 						};
+
 						climb-rate: 100;
 					}
 				}
-				Adw.ActionRow{
+
+				Adw.ActionRow {
 					title: "宽度";
-					Gtk.SpinButton{
+
+					Gtk.SpinButton {
 						digits: 0;
 						numeric: true;
 						// value:10;
-						adjustment: Gtk.Adjustment width{
+						adjustment: Gtk.Adjustment width {
 							upper: 2550;
 							lower: 1;
 							step-increment: 1;
 							value: 600;
 						};
+
 						climb-rate: 100;
 					}
 				}
@@ -143,93 +169,130 @@ template$NotePreferences: Adw.PreferencesWindow{
 		}
 	}
 
-	Adw.PreferencesPage editor{
+	Adw.PreferencesPage editor {
 		icon-name: "document-edit-symbolic";
 		title: "Editor";
 
-		Adw.PreferencesGroup{
-			Adw.ExpanderRow custom_ef{
+		Adw.PreferencesGroup {
+			Adw.ExpanderRow custom_ef {
 				title: "自定义字体";
 				enable-expansion: true;
 				expanded: bind custom_editor_font.active;
+
 				[action]
-				Gtk.Switch custom_editor_font{
+				Gtk.Switch custom_editor_font {
 					active: bind custom_ef.expanded;
 					halign: end;
 					valign: center;
 				}
-				Adw.ActionRow{
+
+				Adw.ActionRow {
 					title: "编辑器字体";
-					Gtk.FontDialogButton custom_font_editor{
-					}
+
+					Gtk.FontDialogButton custom_font_editor {}
 				}
 			}
 		}
 
-		Adw.PreferencesGroup{
-			Adw.SwitchRow{
-				//TODO - 没做。
+		Adw.PreferencesGroup {
+			Adw.SwitchRow {
+				// TODO - 没做。
 				title: "允许markup语法";
 			}
-			
 		}
 	}
 
-	Adw.PreferencesPage sync{
+	Adw.PreferencesPage sync {
 		icon-name: "emblem-synchronizing-symbolic";
 		title: "Sync";
-		Adw.PreferencesGroup{
+
+		Adw.PreferencesGroup {
 			title: "远程存储配置";
-			//TODO - 还没有实现。
-			Gtk.StackSwitcher{
+			// TODO - 还没有实现。
+			Gtk.StackSwitcher {
 				stack: stack;
 			}
-			Gtk.Stack stack{
-				Gtk.StackPage{
+
+			Gtk.Stack stack {
+				Gtk.StackPage {
 					title: "WebDav";
-					child: Gtk.ListBox{
-						Adw.EntryRow webdav_account{title: "账号";}
-						Adw.PasswordEntryRow webdav_password{title: "密码";}
-						Adw.EntryRow webdav_addr{title: "地址";}
-						Gtk.Button webdav_test{label: "测试";}
+
+					child: Gtk.ListBox {
+						Adw.EntryRow webdav_account {
+							title: "账号";
+							max-width-chars: 50;
+						}
+
+						Adw.PasswordEntryRow webdav_password {
+							title: "密码";
+							max-width-chars: 30;
+						}
+
+						Adw.EntryRow webdav_addr {
+							title: "地址";
+							max-width-chars: 128;
+						}
+
+						Gtk.Button webdav_test {
+							label: "测试";
+						}
+						Gtk.Label webdav_result{
+							use-markup: true;
+						}
 					};
 				}
-				Gtk.StackPage{
+
+				Gtk.StackPage {
 					title: "NextCloud";
-					child: Gtk.ListBox{
-						Adw.EntryRow{title: "账号";}
-						Adw.PasswordEntryRow{title: "密码";}
-						Adw.EntryRow{title: "地址";}
-						Gtk.Button{label: "测试";}
+
+					child: Gtk.ListBox {
+						Adw.EntryRow {
+							title: "账号";
+						}
+
+						Adw.PasswordEntryRow {
+							title: "密码";
+						}
+
+						Adw.EntryRow {
+							title: "地址";
+						}
+
+						Gtk.Button {
+							label: "测试";
+						}
 					};
 				}
 			}
 		}
-		Adw.PreferencesGroup{
-			title:"同步设置";
-			//TODO - 没做
+
+		Adw.PreferencesGroup {
+			title: "同步设置";
+			// TODO - 没做
 		}
 	}
 
-	Adw.PreferencesPage save{
+	Adw.PreferencesPage save {
 		icon-name: "document-save-symbolic";
 		title: "Save";
 
-		Adw.PreferencesGroup{
-			Adw.ActionRow{
-				//TODO - 做了但不是很满意。
+		Adw.PreferencesGroup {
+			Adw.ActionRow {
+				// TODO - 做了但不是很满意。
 				title: "编辑锁定时间";
 				tooltip-text: "当创建时间与当前试图编辑时间的时间间隔超过编辑权限时间，将只能查看而无法修改，但是仍然可以删除。当然了倘若通过系统进行编辑那么是无法阻止的。设置为-1则不会进行编辑锁定。设置为0将会在新建完成后立即锁定。";
-				Gtk.SpinButton{
+
+				Gtk.SpinButton {
 					digits: 0;
 					numeric: true;
 					// value:10;
-					adjustment: Gtk.Adjustment lock_time{
+					adjustment: Gtk.Adjustment lock_time {
 						upper: 360000;
 						lower: -1;
 						step-increment: 1;
 						value: 6;
 					};
+
 					climb-rate: 10;
 					// margin-start: 32;
 					// hexpand: true;
@@ -238,34 +301,39 @@ template$NotePreferences: Adw.PreferencesWindow{
 			}
 		}
 
-		Adw.PreferencesGroup{
+		Adw.PreferencesGroup {
 			title: "内容本地保存";
-			Adw.EntryRow save_path{
+
+			Adw.EntryRow save_path {
 				title: "保存路径";
 				use-underline: true;
 				show-apply-button: true;
+
 				[suffix]
-				Gtk.Button file_choose{
+				Gtk.Button file_choose {
 					icon-name: "document-open-symbolic";
 				}
 			}
-			Adw.ActionRow{
-				//TODO - 没做。
+
+			Adw.ActionRow {
+				// TODO - 没做。
 				title: "多文件保存数量";
 				tooltip-text: "当数量达到阈值则会增加文件数量加速载入与编辑";
-				Gtk.SpinButton{
+
+				Gtk.SpinButton {
 					digits: 0;
 					numeric: true;
 					// value:10;
-					adjustment: Gtk.Adjustment{
+					adjustment: Gtk.Adjustment {
 						upper: 100;
 						lower: 1;
 						step-increment: 1;
 						value: 1;
 					};
+
 					climb-rate: 10;
 				}
-				}
+			}
 		}
 	}
 }
