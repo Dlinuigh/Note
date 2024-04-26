@@ -1,9 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
-	<id>org.lion_claw.note.desktop</id>
-	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>GPL-3.0-or-later</project_license>
-	<description>
-	  <p>No description</p>
-	</description>
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop-application">
+  <!--Created with jdAppStreamEdit 9.0-->
+  <id>org.lion_claw.note.desktop</id>
+  <name>note</name>
+  <summary>My note for diary</summary>
+  <developer id="org.lion_claw">
+    <name>Linghui Ding</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <description>
+    <p>This application is made for keeping note in gnome, since gnote is too old and not made with newest gtk and gnome.</p>
+  </description>
+  <url type="homepage">https://gitlab.com/2024_04/Note</url>
+  <content_rating type="oars-1.1"/>
+  <launchable type="desktop-id">org.lion_claw</launchable>
 </component>
