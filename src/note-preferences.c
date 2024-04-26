@@ -102,15 +102,12 @@ static void sync_webdav_test(GtkButton* btn, NotePreferences* self){
 	char* account = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_account));
 	char* password = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_password));
 	char* addr = (char*) adw_preferences_row_get_title(ADW_PREFERENCES_ROW(self->webdav_addr));
-	GSocket* socket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM,G_SOCKET_PROTOCOL_TCP, NULL);
-	GSocketAddress* address = g_socket_address_new_from_native(addr,0);
 	// GSocketAddress* address = g_list_nth (g_resolver_lookup_by_name (), 0);
 	//FIXME - 不知道为什么无法获得填写的信息。gtk_accessible_text_get_contents: assertion 'end >= start' failed错误。
-	printf("%s", addr);
-	printf("%s", account);
-	printf("%s", password);
-	g_assert(G_IS_SOCKET_ADDRESS(address));
-	g_socket_connect (socket, address, NULL, NULL);
+	//TODO - webdav可以用gfile uri获得。
+	g_print("%s", addr);
+	g_print("%s", account);
+	g_print("%s", password);
 }
 
 static void

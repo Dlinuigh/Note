@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "config.h"
+#include "config.h" // IWYU pragma: export
 #include "note-window.h"
-#include <glib-object.h>
+#include <glib-object.h>  
 #include <json-glib/json-glib.h>
 #include <json-glib/json-gobject.h>
 struct _NoteWindow

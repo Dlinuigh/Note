@@ -19,6 +19,7 @@ note_deps = [
   dependency('gtk4'),
   dependency('libadwaita-1', version: '>= 1.4'),
   dependency('json-glib-1.0'),
+  dependency('glib-2.0')
 ]
 
 note_sources += gnome.compile_resources('note-resources',

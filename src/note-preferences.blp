@@ -168,6 +168,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 
 		Adw.PreferencesGroup{
 			Adw.SwitchRow{
+				//TODO - 没做。
 				title: "允许markup语法";
 			}
 			
@@ -179,6 +180,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 		title: "Sync";
 		Adw.PreferencesGroup{
 			title: "远程存储配置";
+			//TODO - 还没有实现。
 			Gtk.StackSwitcher{
 				stack: stack;
 			}
@@ -205,6 +207,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 		}
 		Adw.PreferencesGroup{
 			title:"同步设置";
+			//TODO - 没做
 		}
 	}
 
@@ -214,6 +217,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 
 		Adw.PreferencesGroup{
 			Adw.ActionRow{
+				//TODO - 做了但不是很满意。
 				title: "编辑锁定时间";
 				tooltip-text: "当创建时间与当前试图编辑时间的时间间隔超过编辑权限时间，将只能查看而无法修改，但是仍然可以删除。当然了倘若通过系统进行编辑那么是无法阻止的。设置为-1则不会进行编辑锁定。设置为0将会在新建完成后立即锁定。";
 				Gtk.SpinButton{
@@ -246,6 +250,7 @@ template$NotePreferences: Adw.PreferencesWindow{
 				}
 			}
 			Adw.ActionRow{
+				//TODO - 没做。
 				title: "多文件保存数量";
 				tooltip-text: "当数量达到阈值则会增加文件数量加速载入与编辑";
 				Gtk.SpinButton{

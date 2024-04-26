@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "config.h"
+#include "config.h" // IWYU pragma: export
 
 #include "note-application.h"
 #include "note-window.h"
