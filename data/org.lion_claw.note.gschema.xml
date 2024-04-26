@@ -16,7 +16,7 @@
 		<key name='lock-time' type='i'><default>6</default></key>
 		<key name='save-path' type='s'><default>"~/.local/share/Note/data.json"</default></key>
 		<key name='webdav-account' type='s'><default>"qwert@gmail.com"</default></key>
-		<key name='webdav-addr' type='s'><default>https://dav.com</default></key>
-		<key name='webdav-passwd' type='s'><default>123456</default></key>
+		<key name='webdav-addr' type='s'><default>"https://dav.com"</default></key>
+		<key name='webdav-passwd' type='s'><default>"123456"</default></key>
 	</schema>
 </schemalist>
