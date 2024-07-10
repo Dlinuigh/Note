@@ -8,7 +8,7 @@
     "build/**": true,
     "_build/**": true
   },
-  "C_Cpp.default.compileCommands": "/home/lion/Projects/Note/_build/compile_commands.json",
+  "C_Cpp.default.compileCommands": "/home/lion/Documents/Note/_build/compile_commands.json",
   "C_Cpp.default.configurationProvider": "mesonbuild.mesonbuild",
   "files.associations": {
     "config.h": "c",

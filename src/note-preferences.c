@@ -30,7 +30,7 @@ struct _NotePreferences {
   AdwEntryRow *webdav_account;
   AdwPasswordEntryRow *webdav_password;
   AdwEntryRow *webdav_addr;
-	GtkLabel *webdav_result;
+  GtkLabel *webdav_result;
 };
 
 G_DEFINE_FINAL_TYPE(NotePreferences, note_preferences,
@@ -82,7 +82,7 @@ static void note_preferences_class_init(NotePreferencesClass *klass) {
                                        webdav_password);
   gtk_widget_class_bind_template_child(widget_class, NotePreferences,
                                        webdav_addr);
-	gtk_widget_class_bind_template_child(widget_class, NotePreferences,
+  gtk_widget_class_bind_template_child(widget_class, NotePreferences,
                                        webdav_result);
 }
 
@@ -150,40 +150,43 @@ static void save_choose(GtkButton *btn, NotePreferences *self) {
   gtk_file_dialog_open(dialog, GTK_WINDOW(self), NULL, open_finish, self);
 }
 
-void create_empty_file(GFile* file){
-	g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
+void create_empty_file(GFile *file) {
+  g_file_create(file, G_FILE_CREATE_PRIVATE, NULL, NULL);
 }
 
 static void callback(GObject *source_object, GAsyncResult *res,
                      gpointer user_data) {
-	NotePreferences* self = NOTE_PREFERENCES(user_data);
+  NotePreferences *self = NOTE_PREFERENCES(user_data);
   GFile *file = G_FILE(source_object);
   GError *error = NULL;
-	gboolean flag=false;
+  gboolean flag = false;
   if ((flag = g_file_mount_enclosing_volume_finish(file, res, &error))) {
     // g_file_find_enclosing_mount(file, NULL, NULL);
-		gtk_label_set_markup(self->webdav_result, "<span foreground='green'>OK</span>");
-  }else if(error->code == 17){
-		gtk_label_set_markup(self->webdav_result, "<span foreground='blue'>Already Connect</span>");
-	} else {
-		char* message = g_strconcat("<span foreground='red'>",error->message, "</span>", NULL);
-		gtk_label_set_markup(self->webdav_result, message);
+    gtk_label_set_markup(self->webdav_result,
+                         "<span foreground='green'>OK</span>");
+  } else if (error->code == 17) {
+    gtk_label_set_markup(self->webdav_result,
+                         "<span foreground='blue'>Already Connect</span>");
+  } else {
+    char *message =
+        g_strconcat("<span foreground='red'>", error->message, "</span>", NULL);
+    gtk_label_set_markup(self->webdav_result, message);
   }
-	if(flag || error->code==17){
-		GFile* note = g_file_get_child(file, "Note");
-		if(g_file_query_exists(note, NULL)){
-			GFile* json = g_file_get_child(note, "data.json");
-			if(g_file_query_exists(json, NULL)){
+  if (flag || error->code == 17) {
+    GFile *note = g_file_get_child(file, "Note");
+    if (g_file_query_exists(note, NULL)) {
+      GFile *json = g_file_get_child(note, "data.json");
+      if (g_file_query_exists(json, NULL)) {
 
-			}else{
-				create_empty_file(json);
-			}
-		}else{
-			g_file_make_directory(note, NULL, NULL);
-			GFile* json = g_file_get_child(note, "data.json");
-			create_empty_file(json);
-		}
-	}
+      } else {
+        create_empty_file(json);
+      }
+    } else {
+      g_file_make_directory(note, NULL, NULL);
+      GFile *json = g_file_get_child(note, "data.json");
+      create_empty_file(json);
+    }
+  }
 }
 
 static void sync_webdav_test(GtkButton *btn, NotePreferences *self) {
@@ -268,7 +271,8 @@ static void note_preferences_init(NotePreferences *self) {
   gtk_editable_set_text(GTK_EDITABLE(self->webdav_addr),
                         g_settings_get_string(self->settings, "webdav-addr"));
   // gtk_editable_set_text(GTK_EDITABLE(self->webdav_password),
-  //                       g_settings_get_string(self->settings, "webdav-passwd"));
+  //                       g_settings_get_string(self->settings,
+  //                       "webdav-passwd"));
   g_signal_connect(self->webdav_test, "clicked", G_CALLBACK(sync_webdav_test),
                    self);
   g_signal_connect(self, "close-request", G_CALLBACK(note_preferences_close),
